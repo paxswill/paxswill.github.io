@@ -1,5 +1,7 @@
 {% macro article_format(article) %}
-<h2>{{ article.title }}</h2>
+<article>
+<h2><a href="{{ article.url }}">{{ article.title }}</a></h2>
 {{ article.content }}
-<small>{{ article.locale_date }}</small>
+<time datetime="{{ article.date|strftime('%Y-%m-%d %H:%M') }}" pubdate>{{ article.locale_date }}</time>
+</article>
 {% endmacro %}
