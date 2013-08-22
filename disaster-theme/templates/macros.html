@@ -10,6 +10,8 @@
 <article>
 <h2><a href="{{ article.url }}">{{ article.title }}</a></h2>
 {{ article.content }}
-<time datetime="{{ article.date|strftime('%Y-%m-%d %H:%M') }}" pubdate>{{ article.locale_date }}</time>
+  <small>
+    <time datetime="{{ article.date|strftime('%Y-%m-%d %H:%M') }}" pubdate>{{ article.locale_date }}</time>
+  </small>
 </article>
 {% endmacro %}
