@@ -59,18 +59,19 @@
         </div>
       </div>
     </div>
-    <footer class="row">
-      <div class="col-md-offset-3 col-md-3">
-        <ul>
-        {% block recent_articles %}
-        {% for article in articles[:5] %}
-        <li><a href="{{ article.url }}">{{ article.title }}</a></li>
-        {% endfor %}
-        {% endblock recent_articles %}
-        </ul>
-      </div>
-      <div class="col-md-3">
-        <p>Copyright Will Ross blahblah</p>
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class="col-md-offset-3 col-md-3">
+            <ul>
+              <li>About</li>
+              <li>Archives</li>
+            </ul>
+          </div>
+          <div class="col-md-3">
+            <p>&copy; {{ AUTHOR }} blahblah</p>
+          </div>
+        </div>
       </div>
     </footer>
     <script src="//code.jquery.com/jquery.js"></script>

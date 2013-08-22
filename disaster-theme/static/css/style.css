@@ -29,6 +29,9 @@ header a:focus i {
 }
 
 footer {
+  margin-top: 30px;
+  padding-bottom: 10px;
+  padding-top: 10px;
   background-color: #e87600;
   color: #fff;
 }
