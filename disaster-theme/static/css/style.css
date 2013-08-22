@@ -28,6 +28,15 @@ header a:focus i {
   color: #e87600;
 }
 
+div.highlight pre {
+  /* Undo Bootstrap's <pre> screwiness */
+  white-space: pre;
+  word-break: normal;
+  word-wrap: normal;
+  /* Scrollbars */
+  overflow-x: auto;
+}
+
 footer {
   margin-top: 30px;
   padding-bottom: 10px;
