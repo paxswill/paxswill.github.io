@@ -1,3 +1,11 @@
+{% macro title(page_title=None) %}
+{% if page_title %}
+{{ page_title }} | {{ SITENAME }}
+{% else %}
+{{ SITENAME }}
+{% endif %}
+{% endmacro %}
+
 {% macro article_format(article) %}
 <article>
 <h2><a href="{{ article.url }}">{{ article.title }}</a></h2>
