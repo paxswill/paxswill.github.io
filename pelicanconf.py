@@ -4,9 +4,9 @@ from __future__ import unicode_literals
 
 AUTHOR = u'Will Ross'
 SITENAME = u'Disaster Area'
-SITEURL = ''
+SITEURL = 'http://paxswill.com'
 
-TIMEZONE = 'Europe/Paris'
+TIMEZONE = 'America/New_York'
 
 DEFAULT_LANG = u'en'
 
@@ -27,5 +27,13 @@ SOCIAL = (('You can add links in your config file', '#'),
 
 DEFAULT_PAGINATION = 5
 
+# Extract the date slug from the file name
+FILENAME_METADATA = r'(?P<date>\d{4}-\d{2}-\d{2})-(?P<slug>.*)'
+
+# Use Markdown for content
+MARKUP = ('markdown', 'mdown', 'md')
+
+TYPOGRIFY = True
+
 # Uncomment following line if you want document-relative URLs when developing
-#RELATIVE_URLS = True
+RELATIVE_URLS = True
