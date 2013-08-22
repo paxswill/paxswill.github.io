@@ -25,6 +25,7 @@
         <header class="col-sm-12 col-md-offset-1 col-md-2">
           {% block sidebar %}
           <h1>{{ SITENAME }}</h1>
+          {% block social_buttons %}
           {% if EMAIL %}
           <a href='mailto:{{ EMAIL }}'><i class="icon-envelope"></i></a>
           {% endif %}
@@ -52,6 +53,7 @@
           {% if FACEBOOK_ID %}
           <a href='https://facebook.com/{{ FACEBOOK_ID }}'><i class="icon-facebook-sign icon-large"></i></a>
           {% endif %}
+          {% endblock social_buttons %}
           {% endblock sidebar %}
         </header>
         <div class="col-sm-12 col-md-6">
