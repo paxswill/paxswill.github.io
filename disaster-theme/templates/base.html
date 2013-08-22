@@ -21,12 +21,9 @@
     {% block body %}
     <div class="container">
       <div class="row">
-        <header class="col-sm-12 col-md-3">
+        <header class="col-sm-12 col-md-offset-1 col-md-2">
           {% block sidebar %}
-          <div id="site_name">
-            <h1>Disaster<br>Area</h1>
-          </div>
-          <p>by {{ AUTHOR }}</p>
+          <h1>{{ SITENAME }}</h1>
           {% if EMAIL %}
           <a href='mailto:{{ EMAIL }}'><i class="icon-envelope"></i></a>
           {% endif %}

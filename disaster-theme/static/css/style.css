@@ -11,20 +11,12 @@ article h2 a {
   color: #333;
 }
 
-#site_name {
-  background-color: #e87600;
-  border-color: #fff;
-  border-radius: 10px;
-  border-style: double;
-  border-width: 10px;
-  color: #fff;
-  text-align: center;
+header {
+  text-align: right;
 }
 
 header h1 {
-  text-transform: uppercase;
-  margin-top: 10px;
-  font-size: 24px;
+  color: #e87600;
 }
 
 header a i {
