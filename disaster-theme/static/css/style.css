@@ -37,6 +37,14 @@ div.highlight pre {
   overflow-x: auto;
 }
 
+code {
+  color: #333;
+  background-color: #f5f5f5;
+  border-color: #ccc;
+  border-width: 1px;
+  border-style: solid;
+}
+
 footer {
   margin-top: 30px;
   padding-bottom: 10px;
