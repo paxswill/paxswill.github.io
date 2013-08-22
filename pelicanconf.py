@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 AUTHOR = u'Will Ross'
 SITENAME = u'Disaster Area'
-SITEURL = 'http://paxswill.com'
+SITEURL = ''
 
 TIMEZONE = 'America/New_York'
 
@@ -33,7 +33,16 @@ FILENAME_METADATA = r'(?P<date>\d{4}-\d{2}-\d{2})-(?P<slug>.*)'
 # Use Markdown for content
 MARKUP = ('markdown', 'mdown', 'md')
 
+# Use Typogrify
 TYPOGRIFY = True
 
+# Set URLs and paths
+ARTICLE_URL = 'blog/{date:%Y}/{date:%m}/{date:%d}/{slug}/'
+ARTICLE_SAVE_AS = ARTICLE_URL + 'index.html'
+
+# Show Archives for years and months
+YEAR_ARCHIVE_SAVE_AS = 'blog/{date:%Y}/index.html'
+MONTH_ARCHIVE_SAVE_AS = 'blog/{date:%Y}/{date:%m}/index.html'
+
 # Uncomment following line if you want document-relative URLs when developing
-RELATIVE_URLS = True
+#RELATIVE_URLS = True
