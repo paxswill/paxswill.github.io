@@ -1,0 +1,5 @@
+{% macro article_format(article) %}
+<h2>{{ article.title }}</h2>
+{{ article.content }}
+<small>{{ article.locale_date }}</small>
+{% endmacro %}

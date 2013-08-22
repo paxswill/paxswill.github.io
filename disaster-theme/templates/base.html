@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-salce=1.0">
     <!-- Boostrap resources -->
     <link href="{{ THEME_STATIC_DIR if THEME_STATIC_DIR else 'theme' }}/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="{{ THEME_STATIC_DIR if THEME_STATIC_DIR else 'theme' }}/css/style.css" rel="stylesheet" media="screen">
     {% endblock head %}
   </head>
   <body>
@@ -23,7 +24,6 @@
           {% endblock sidebar %}
         </header>
         <div class="col-md-6">
-          <h2>{% block content_title %}{% endblock content_title %}</h2>
           {% block content %}
           {% endblock content %}
         </div>
