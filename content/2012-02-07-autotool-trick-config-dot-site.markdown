@@ -12,9 +12,8 @@ I commonly use the Nvidia OpenCL headers, which on the machines I use are
 installed to `/usr/local/cuda/include`. To use them, I could have a config.log
 file like so in my default installation prefix.
 
-``` bash
-CPPFLAGS="${CPPFLAGS} -I/usr/local/cuda/include"
-```
+    :::bash
+    CPPFLAGS="${CPPFLAGS} -I/usr/local/cuda/include"
 
 Now when I run `configure`, it picks up that additional flag for the C 
 preprocessor.

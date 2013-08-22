@@ -18,23 +18,21 @@ way, lets look at how we're going to do this. In Objective-C, methods are
 backed by a concrete implementation in the form of a standard C function. The
 runtime uses the [`IMP`][IMP] type for this, which is defined as
 
-``` objectivec
+    :::objc
     id (*IMP)(id self, SEL selector, ...)
-```
 
 The `...` in this case stands for additional arguments for the method. For
 example, `[@"foo" stringByAppendingString:@"bar"]` will eventually be executed
 by a function matching the prototype below.
 
-``` objectivec
+    :::objc
     id functionName(id self, SEL sel, NSString *otherString)
-```
 
 Additional arguments are just tacked onto the end. This can be combined with
 standard C varargs. The only caveat is we need to signal the end of the varargs
 somehow. I used `nil`.
 
-``` objectivec
+    :::objc
     id stringCons(id self, SEL selector, ...){
     	va_list strings;
     	NSMutableString *fullString = [[NSMutableString alloc] initWithString:self];
@@ -47,7 +45,6 @@ somehow. I used `nil`.
     	va_end(strings);
     	return fullString;
     }
-```
 
 There are two approaches to adding a method to a class at runtime in
 Objective-C. The  normal way is to use
@@ -57,7 +54,7 @@ methods can be added is with the dynamic method resolution available through
 NSObject (Mike Ash touches on this method in a post on
 [message forwarding][msgfwd]).
 
-``` objectivec
+    :::objc
     +(BOOL)resolveInstanceMethod:(SEL)sel{
     	// Check that the selector is just ':' characters
     	const char *checkName = sel_getName(sel);
@@ -90,7 +87,6 @@ NSObject (Mike Ash touches on this method in a post on
     		return [super resolveInstanceMethod:sel];
     	}
     }
-```
 
 Here all were doing is checking to see if the selector is completely made up
 of ':' characters. If it is, we add the `stringCons` IMP from above for that
@@ -107,12 +103,11 @@ have defined.
 That's it to adding a cons-like operator to NSString in Objective-C. To use it,
 just insert it between instances of NSString ending with `nil`, like below.
 
-``` objectivec
+    :::objc
     NSString *one = @"1";
     NSString *two = @"2";
     NSString *three = @"3";
     NSString *all = [one:two:three:nil];
-```
 
 [IMP]: http://developer.apple.com/library/mac/documentation/Cocoa/Reference/ObjCRuntimeRef/Reference/reference.html#//apple_ref/doc/uid/TP40001418-CH3g-BAJFGBJF
 [class_addMethod]: http://developer.apple.com/library/mac/documentation/Cocoa/Reference/ObjCRuntimeRef/Reference/reference.html#//apple_ref/c/func/class_addMethod

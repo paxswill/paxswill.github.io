@@ -28,7 +28,7 @@ hang. The fix is detailed in [this][fix] MyDellMini forum post. Reproduced
 here, the fix is to add a hook to the sleep process that unmounts all memory
 cards. Put the following script in the `/etc/pm/sleep.d/` directory.  
 
-``` bash
+    :::bash
     #!/bin/bash
     
     case $1 in
@@ -36,12 +36,11 @@ cards. Put the following script in the `/etc/pm/sleep.d/` directory.
     umount /dev/mmcblk*
         ;;
     #    thaw|resume)
-    #        ;;    
-    *)  echo $1 
+    #        ;;
+    *)  echo $1
         ;;
     esac
-    exit 0	
-```
+    exit 0
 
 Then make it executable.
 
