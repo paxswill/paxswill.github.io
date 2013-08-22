@@ -1,7 +1,7 @@
 Title: Multimedia Keys in Xfce
 Date: 2011-09-28 17:56
 Category: linux
-published: false
+Status: Draft
 
 After I got my [keyboard working](linky), I wanted to get my media keys
 working with my system. In GNOME there are some helper tools, but I
