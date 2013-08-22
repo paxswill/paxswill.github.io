@@ -16,11 +16,35 @@
       <div class="row">
         <header class="col-md-offset-1 col-md-2">
           {% block sidebar %}
-          <h1>Disaster Area</h1>
-          <ul class="nav nav-pills nav-stacked">
-            <li>by Will Ross</li>
-            <li>Email</li>
-            <li>Github</li>
+          <h1>{{ SITENAME }}</h1>
+          <p>by {{ AUTHOR }}</p>
+          {% if EMAIL %}
+          <a href='mailto:{{ EMAIL }}'><i class="icon-envelope"></i></a>
+          {% endif %}
+          {% if GITHUB_ID %}
+          <a href='https://github.com/{{ GITHUB_ID }}'><i class="icon-github-sign icon-large"></i></a>
+          {% endif %}
+          {% if BITBUCKET_ID %}
+          <a href='https://bitbucket.org/{{ BITBUCKET_ID }}'><i class="icon-bitbucket-sign icon-large"></i></a>
+          {% endif %}
+          {% if STACKOVERFLOW_ID %}
+          <a href='http://stackoverflow.com/users/{{ STACKOVERFLOW_ID }}'><i class="icon-stackexchange icon-large"></i></a>
+          {% endif %}
+          {% if DRIBBBLE_ID %}
+          <a href='http://dribbble.com/{{ DRIBBBLE_ID }}'><i class="icon-dribbble icon-large"></i></a>
+          {% endif %}
+          {% if FLICKR_ID %}
+          <a href='http://www.flickr.com/photos/{{ FLICKR_ID }}'><i class="icon-flickr icon-large"></i></a>
+          {% endif %}
+          {% if LINKEDIN_ID %}
+          <a href='http://www.linkedin.com/in/{{ LINKEDIN_ID }}'><i class="icon-linkedin-sign icon-large"></i></a>
+          {% endif %}
+          {% if TWITTER_ID %}
+          <a href='https://twitter.com/{{ TWITTER_ID }}'><i class="icon-twitter-sign icon-large"></i></a>
+          {% endif %}
+          {% if FACEBOOK_ID %}
+          <a href='https://facebook.com/{{ FACEBOOK_ID }}'><i class="icon-facebook-sign icon-large"></i></a>
+          {% endif %}
           </ul>
           {% endblock sidebar %}
         </header>
