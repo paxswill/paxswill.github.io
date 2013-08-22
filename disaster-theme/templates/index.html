@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import "macros.html" as macros %}
+
 {% block content %}
 {% for article in articles_page.object_list %}
 {{ macros.article_format(article) }}
