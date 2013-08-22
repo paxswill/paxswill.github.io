@@ -1,10 +1,7 @@
----
-layout: post
-title: "Autotools Trick: config.site"
-date: 2012-02-07 16:01
-comments: true
-categories: autoconf
----
+Title: Autotools Trick: config.site
+Date: 2012-02-07 16:01
+Category: autoconf
+
 This is a quick trick for those who have to continually set up common settings
 when using Autotools style `configure` scripts. One of the initial steps a
 configure script does is to look for a `$prefix/share/config.site`

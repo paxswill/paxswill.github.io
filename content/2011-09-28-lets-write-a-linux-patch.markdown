@@ -1,11 +1,7 @@
----
-layout: post
-title: "Let's Write a Linux Patch"
-date: 2011-09-30
-comments: true
-categories: code linux
+Title: Let's Write a Linux Patch
+Date: 2011-09-30 00:00
+Category: code
 published: false
----
 
 Due to an unfortunate accident involving a glass of water and my main
 laptop, I've been using my netbook running Debian Sid. To make working

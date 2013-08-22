@@ -1,10 +1,5 @@
----
-layout: post
-title: cWavelet
-author: Will Ross
-date: 2011-03-28
-comments: true
----
+Title: cWavelet
+Date: 2011-03-28 00:00
 
 Weekend project I made: [cWavelet](https://github.com/paxswill/cwavelet).
 
