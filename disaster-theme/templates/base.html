@@ -24,7 +24,7 @@
       <div class="row">
         <header class="col-sm-offset-2 col-sm-8 col-md-offset-1 col-md-2">
           {% block sidebar %}
-          <h1>{{ SITENAME }}<br class="hidden-sm hidden-xs">
+          <h1>{{ SITENAME }}<br class="visible-md visible-lg">
             <small>
               {% block social_buttons %}
               {% if EMAIL %}
@@ -59,8 +59,8 @@
           </h1>
           {% endblock sidebar %}
         </header>
-        <div class="clearfix visible-sm visible-xs"></div>
-        <div class="col-sm-2 visible-sm visible-xs"></div>
+        <div class="clearfix hidden-md hidden-lg"></div>
+        <div class="col-sm-2 hidden-md hidden-lg"></div>
         <div class="col-sm-8 col-md-6">
           {% block content %}
           {% endblock content %}
