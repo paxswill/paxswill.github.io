@@ -24,8 +24,8 @@
       <div class="row">
         <header class="col-sm-offset-2 col-sm-8 col-md-offset-1 col-md-2">
           {% block sidebar %}
-          <h1>{{ SITENAME }}<br class="hidden-sm">
-            <small class="pull-right">
+          <h1>{{ SITENAME }}<br class="hidden-sm hidden-xs">
+            <small>
               {% block social_buttons %}
               {% if EMAIL %}
               <a href='mailto:{{ EMAIL }}'><i class="icon-envelope"></i></a>
@@ -59,8 +59,8 @@
           </h1>
           {% endblock sidebar %}
         </header>
-        <div class="clearfix visible-sm"></div>
-        <div class="col-sm-2 visible-sm"></div>
+        <div class="clearfix visible-sm visible-xs"></div>
+        <div class="col-sm-2 visible-sm visible-xs"></div>
         <div class="col-sm-8 col-md-6">
           {% block content %}
           {% endblock content %}

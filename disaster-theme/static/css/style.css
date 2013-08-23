@@ -17,7 +17,14 @@ header h1 {
 }
 
 header small {
-  text-align: right;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  header small {
+    float: right;
+    white-space: normal;
+  }
 }
 
 header i {
