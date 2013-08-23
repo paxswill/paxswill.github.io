@@ -11,9 +11,15 @@ article h2 a {
   color: #333;
 }
 
-/* Header stuff */
+/* Header layout */
 header h1 {
   color: #e87600;
+}
+
+@media (min-width: 992px) {
+  header h1 {
+    text-align: right;
+  }
 }
 
 header small {
@@ -27,6 +33,7 @@ header small {
   }
 }
 
+/* Header colors */
 header i {
   color: #999;
 }
@@ -34,12 +41,6 @@ header i {
 header a:hover,
 header a:focus {
   color: #e87600;
-}
-
-@media (min-width: 992px) {
-  header h1 {
-    text-align: right;
-  }
 }
 
 /* Code markup */
