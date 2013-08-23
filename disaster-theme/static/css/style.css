@@ -11,23 +11,31 @@ article h2 a {
   color: #333;
 }
 
-header {
-  text-align: right;
-}
-
+/* Header stuff */
 header h1 {
   color: #e87600;
 }
 
-header a i {
-  color: #333;
+header small {
+  text-align: right;
 }
 
-header a:hover i,
-header a:focus i {
+header i {
+  color: #999;
+}
+
+header a:hover,
+header a:focus {
   color: #e87600;
 }
 
+@media (min-width: 992px) {
+  header h1 {
+    text-align: right;
+  }
+}
+
+/* Code markup */
 div.highlight pre {
   /* Undo Bootstrap's <pre> screwiness */
   white-space: pre;
