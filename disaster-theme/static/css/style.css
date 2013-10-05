@@ -14,9 +14,13 @@ header small {
   }
 }
 
-/* Header colors */
-header i {
+/* Page header colors */
+header small a {
   color: #999;
+}
+header small a:hover,
+header small a:focus {
+  color: #333;
 }
 
 /* Disable text decorations for the page header links */
