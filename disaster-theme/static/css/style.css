@@ -1,20 +1,17 @@
 article h2 a {
   color: #333;
 }
-
-/* Header layout */
 }
 
+/* Position the page header for various screen sizes */
+header small {
+  white-space: nowrap;
+}
 @media (min-width: 992px) {
   header h1 {
     text-align: right;
   }
 }
-
-header small {
-  white-space: nowrap;
-}
-
 @media (min-width: 768px) {
   header small {
     float: right;
