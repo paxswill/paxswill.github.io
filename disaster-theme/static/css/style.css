@@ -27,8 +27,10 @@ header i {
   color: #999;
 }
 
+/* Disable text decorations for the page header links */
 header a:hover,
 header a:focus {
+  text-decoration: none;
 }
 
 /* Code markup */
