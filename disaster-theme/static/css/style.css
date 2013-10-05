@@ -1,19 +1,8 @@
-a {
-  color: #e87600;
-}
-
-a:hover,
-a:focus {
-  color: #ae6d2c;
-}
-
 article h2 a {
   color: #333;
 }
 
 /* Header layout */
-header h1 {
-  color: #e87600;
 }
 
 @media (min-width: 992px) {
@@ -40,7 +29,6 @@ header i {
 
 header a:hover,
 header a:focus {
-  color: #e87600;
 }
 
 /* Code markup */
