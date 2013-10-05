@@ -47,7 +47,6 @@ header a:focus {
 div.highlight pre {
   /* Undo Bootstrap's <pre> screwiness */
   white-space: pre;
-  word-break: normal;
   word-wrap: normal;
   /* Scrollbars */
   overflow-x: auto;
