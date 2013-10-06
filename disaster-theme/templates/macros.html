@@ -12,12 +12,26 @@
 </time>
 {% endmacro %}
 
-{% macro article_format(article) %}
-<article>
+
+{% macro article_title(article) %}
 <h2>
   <a href="{{ SITEURL }}/{{ article.url }}">{{ article.title }}</a>
-  <small>{{ article_timestamp(article) }}</small>
+  {% if article.date is defined -%}
+    <small>{{ article_timestamp(article) }}</small>
+  {%- endif %}
 </h2>
+{% endmacro %}
+
+{% macro article_lede(article) %}
+<article>
+{{ article_title(article) }}
+{{ article.summary }}
+</article>
+{% endmacro %}
+
+{% macro article_format(article) %}
+<article>
+{{ article_title(article) }}
 {{ article.content }}
 </article>
 {% endmacro %}
