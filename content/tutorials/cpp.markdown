@@ -1,4 +1,4 @@
-Title: "The C Preprocessor"
+Title: The C Preprocessor
 Date: 2012-01-16 22:31
 Slug: tutorials/cpp
 
@@ -7,19 +7,18 @@ is a macro processor. It searches through its input, replacing certain sequences
 characters (tokens) with other sequences. It has a fairly small language, with most
 of the primary token you'll encounter listed below.
 
-{% codeblock lang:c %}
-#include
-#if
-#ifdef
-#ifndef
-#else
-#elif
-#endif
-#define
-#undef
-#warning
-#error
-{% endcodeblock %}
+    :::c
+    #include
+    #if
+    #ifdef
+    #ifndef
+    #else
+    #elif
+    #endif
+    #define
+    #undef
+    #warning
+    #error
 
 The `#ifdef` and `#ifndef` are shorthand for `#if defined` and `#if !defined` respectively.
 
@@ -34,48 +33,51 @@ directory and then in the system directories.
 Now let's see what's going on. You can stop the `gcc` from going past preprocessing by giving
 it the `-E` flag. Here are the two files we're going to use.
 
-{% codeblock foo.c lang:c %}
-int addOne(int x){
-	return x + 1;
-}
-{% endcodeblock %}
+foo.c
 
-{% codeblock bar.c lang:c %}
-#include "foo.c"
+    :::c
+    int addOne(int x){
+        return x + 1;
+    }
+bar.c
 
-int addTwo(int y){
-	return addOne(addOne(y));
-}
-{% endcodeblock %}
+    :::c
+    #include "foo.c"
+
+    int addTwo(int y){
+        return addOne(addOne(y));
+    }
 
 Because `addTwo` uses the `addOne` function, foo.c needs to include bar.c. If I run
 `gcc -E` on each file, this is the result.
 
-{% codeblock foo.i lang:c %}
-# 1 "foo.c"
-# 1 "<built-in>"
-# 1 "<command-line>"
-# 1 "foo.c"
-int addOne(int x){
- return x + 1;
-}
-{% endcodeblock %}
+foo.i
 
-{% codeblock bar.i lang:c %}
-# 1 "bar.c"
-# 1 "<built-in>"
-# 1 "<command-line>"
-# 1 "bar.c"
-# 1 "foo.c" 1
-int addOne(int x){
- return x + 1;
-}
-# 2 "bar.c" 2
+    :::c
+    # 1 "foo.c"
+    # 1 "<built-in>"
+    # 1 "<command-line>"
+    # 1 "foo.c"
+    int addOne(int x){
+     return x + 1;
+    }
 
-int addTwo(int y){
- return addOne(addOne(y));
-}
-{% endcodeblock %}
+bar.i
+
+    :::c
+    # 1 "bar.c"
+    # 1 "<built-in>"
+    # 1 "<command-line>"
+    # 1 "bar.c"
+    # 1 "foo.c" 1
+    int addOne(int x){
+     return x + 1;
+    }
+    # 2 "bar.c" 2
+
+    int addTwo(int y){
+     return addOne(addOne(y));
+    }
 
 Notice that the contents of foo.i are duplicated in bar.i (`.i` is the extension for
 preprocessed files). This is because the preprocessor copies in the contents of foo.c
@@ -87,16 +89,14 @@ file, which now has whatever foo.c had.
 The `#define` statement can be used to create new macros. A common example is if you have a
 constant.
 
-{% codeblock lang:c %}
-#define GRAVITY_EARTH -9.81
-{% endcodeblock %}
+    :::c
+    #define GRAVITY_EARTH -9.81
 
 This creates a token named `GRAVITY_EARTH`, that will be replaced with the text `-9.81`. You
 can also create macros that don't get replaced with anything, they just exist.
 
-{% codeblock lang:c %}
-#define HAS_GRAVITY
-{% endcodeblock %}
+    :::c
+    #define HAS_GRAVITY
 
 This defines a token called `HAS_GRAVITY`. If you have this text in your code, it will be deleted.
 
@@ -105,110 +105,113 @@ This defines a token called `HAS_GRAVITY`. If you have this text in your code, i
 Let's look back at our example files. Say I create a new file with a new function the uses the
 previous two files.
 
-{% codeblock baz.c lang:c %}
-#include "foo.c"
-#include "bar.c"
+baz.c
 
-int addThree(int z){
-	return addOne(addTwo(z));
-}
-{% endcodeblock %}
+    :::c
+    #include "foo.c"
+    #include "bar.c"
+
+    int addThree(int z){
+        return addOne(addTwo(z));
+    }
 
 And here's the preprocessed version.
 
-{% codeblock baz.i lang:c %}
-# 1 "baz.c"
-# 1 "<built-in>"
-# 1 "<command-line>"
-# 1 "baz.c"
-# 1 "foo.c" 1
-int addOne(int x){
- return x + 1;
-}
-# 2 "baz.c" 2
-# 1 "bar.c" 1
-# 1 "foo.c" 1
-int addOne(int x){
- return x + 1;
-}
-# 2 "bar.c" 2
+baz.i
 
-int addTwo(int y){
- return addOne(addOne(y));
-}
-# 3 "baz.c" 2
+    :::c
+    # 1 "baz.c"
+    # 1 "<built-in>"
+    # 1 "<command-line>"
+    # 1 "baz.c"
+    # 1 "foo.c" 1
+    int addOne(int x){
+     return x + 1;
+    }
+    # 2 "baz.c" 2
+    # 1 "bar.c" 1
+    # 1 "foo.c" 1
+    int addOne(int x){
+     return x + 1;
+    }
+    # 2 "bar.c" 2
 
-int addThree(int z){
- return addOne(addTwo(z));
-}
-{% endcodeblock %}
+    int addTwo(int y){
+     return addOne(addOne(y));
+    }
+    # 3 "baz.c" 2
+
+    int addThree(int z){
+     return addOne(addTwo(z));
+    }
 
 Notice that we have the contents of foo.c in there twice. This will cause a compilation error,
 as you can't have two functions called the same thing. To get around this issue, a thing called
 include guards are used. Let's look at new versions of our example files.
 
-{% codeblock foo-new.c %}
-#ifndef INCLUDE_FOO_C
-#define INCLUDE_FOO_C
-int addOne(int x){
-	return x + 1;
-}
-#endif /* INCLUDE_FOO_C */
-{% endcodeblock %}
+foo-new.c
 
-{% codeblock bar-new.c %}
-#ifndef INCLUDE_BAR_C
-#define INCLUDE_BAR_C
-#include "foo-new.c"
+    :::c
+    #ifndef INCLUDE_FOO_C
+    #define INCLUDE_FOO_C
+    int addOne(int x){
+        return x + 1;
+    }
+    #endif /* INCLUDE_FOO_C */
+bar-new.c
 
-int addTwo(int y){
-	return addOne(addOne(y));
-}
-#endif /* INCLUDE_BAR_C */
-{% endcodeblock %}
+    :::c
+    #ifndef INCLUDE_BAR_C
+    #define INCLUDE_BAR_C
+    #include "foo-new.c"
 
-{% codeblock baz-new.c %}
-#ifndef INCLUDE_BAZ_C
-#define INCLUDE_BAZ_C
-#include "foo-new.c"
-#include "bar-new.c"
+    int addTwo(int y){
+        return addOne(addOne(y));
+    }
+    #endif /* INCLUDE_BAR_C */
 
-int addThree(int z){
-	return addOne(addTwo(z));
-}
-#endif /* INCLUDE_BAZ_C */
-{% endcodeblock %}
+baz-new.c
+
+    :::c
+    #ifndef INCLUDE_BAZ_C
+    #define INCLUDE_BAZ_C
+    #include "foo-new.c"
+    #include "bar-new.c"
+
+    int addThree(int z){
+        return addOne(addTwo(z));
+    }
+    #endif /* INCLUDE_BAZ_C */
 
 Now the preprocessed output of baz.c is 
 
-{% codeblock baz-new.i lang:c %}
-# 1 "baz-new.c"
-# 1 "<built-in>"
-# 1 "<command-line>"
-# 1 "baz-new.c"
+    :::c
+    # 1 "baz-new.c"
+    # 1 "<built-in>"
+    # 1 "<command-line>"
+    # 1 "baz-new.c"
 
 
-# 1 "foo-new.c" 1
+    # 1 "foo-new.c" 1
 
 
-int addOne(int x){
- return x + 1;
-}
-# 4 "baz-new.c" 2
-# 1 "bar-new.c" 1
+    int addOne(int x){
+     return x + 1;
+    }
+    # 4 "baz-new.c" 2
+    # 1 "bar-new.c" 1
 
 
 
 
-int addTwo(int y){
- return addOne(addOne(y));
-}
-# 5 "baz-new.c" 2
+    int addTwo(int y){
+     return addOne(addOne(y));
+    }
+    # 5 "baz-new.c" 2
 
-int addThree(int z){
- return addOne(addTwo(z));
-}
-{% endcodeblock %}
+    int addThree(int z){
+     return addOne(addTwo(z));
+    }
 
 What's happening here is called conditional compilation. In C, you can conditionally
 do thing with `if` statements. You can do the same thing with the C preprocessor. The
