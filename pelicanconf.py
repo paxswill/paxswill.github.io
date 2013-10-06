@@ -38,8 +38,13 @@ MARKUP = ('markdown', 'mdown', 'md')
 TYPOGRIFY = True
 
 # Set URLs and paths
+ARTICLE_DIR = 'blog'
 ARTICLE_URL = 'blog/{date:%Y}/{date:%m}/{date:%d}/{slug}/'
 ARTICLE_SAVE_AS = ARTICLE_URL + 'index.html'
+PAGE_DIR = ''
+PAGE_EXCLUDES = ('blog', )
+PAGE_URL = '{slug}/'
+PAGE_SAVE_AS = PAGE_URL + 'index.html'
 # Only process indicies and archives right now
 DIRECT_TEMPLATES = ( 'index', 'archives' )
 
