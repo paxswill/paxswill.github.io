@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Ubuntu 10.04 on a Dell Mini&nbsp;9 | 
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Stylesheets -->
+    <link rel="stylesheet" media="screen" href="/theme/css/bootstrap.css">
+    <link rel="stylesheet" href="/theme/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="/theme/css/style.css">
+    <link rel="stylesheet" href="/theme/css/pygments.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <header class="col-sm-offset-2 col-sm-8 col-md-offset-1 col-md-2">
+          <h1><a href="/">Disaster Area</a><br class="visible-md visible-lg">
+            <small>
+              <a href="mailto:paxswill@paxswill.com"><i class="icon-envelope"></i></a>
+              <a href="https://github.com/paxswill"><i class="icon-github-sign"></i></a>
+              <a href="http://stackoverflow.com/users/96454"><i class="icon-stackexchange"></i></a>
+            </small>
+          </h1>
+        </header>
+        <div class="clearfix hidden-md hidden-lg"></div>
+        <div class="col-sm-2 hidden-md hidden-lg"></div>
+        <div class="col-sm-8 col-md-6">
+<article>
+<h2>
+  <a href="/blog/2010/05/01/ubuntu-1004-dell-mini-9/">Ubuntu 10.04 on a Dell Mini&nbsp;9</a>
+<small><time datetime="2010-05-01 00:00" pubdate>
+  01 May 2010
+</time>
+</small></h2>
+
+<p>The Mac <span class="caps">OS</span> X install on my Mini 9 was recently borked (friend was borrowing it,
+and an unclean shutdown corrupted the file system), and I didn&#8217;t have the
+install discs on me. I&#8217;d also been messing with the Lucid Lynx beta in a <span class="caps">VM</span> on
+my machine, and was very impressed with the level of polish, so I decided to
+install Ubuntu on the Mini again and see how it went.
+<!--more-->
+This was a couple days before the release date, so I downloaded the release
+candidate and ran from there. I&#8217;ve used both the normal desktop and netbook
+remix in previous versions of Ubuntu, and for my workflow I prefer using the 
+normal desktop. As there isn&#8217;t a desktop .img available, I downloaded the
+desktop <span class="caps">ISO</span> and used the <span class="caps">USB</span> IMage Writer in my <span class="caps">VM</span> to copy the <span class="caps">ISO</span> to a flash
+drive. Installation had a minor hitch in that the first install didn&#8217;t seem to 
+take, in that after the installer was finished and the system rebooted, nothing
+showed up. I booted to the <span class="caps">USB</span> stick again, reinstalled, and everything worked 
+after&nbsp;that.</p>
+<p>Hardware support is very much improved in this version (I&#8217;ve previously used
+8.04 and 9.04). I didn&#8217;t have to make any configuration changes to use sound
+hardware, Bluetooth 
+worked right away, 3D acceleration was a given as I have an Intel <span class="caps">GPU</span>, and
+after I installed the Broadcom <span class="caps">STA</span> driver through the restricted driver 
+installer, Wifi worked as well. Sleep works as well as it did under 9.10, as
+having an <span class="caps">SD</span> card mounted when you try sleeping causes the suspend process to
+hang. The fix is detailed in <a href="http://www.mydellmini.com/forum/ubuntu-netbook-remix/14722-suspend-hibernate-mini-9-broken-3.html#post143677">this</a> MyDellMini forum post. Reproduced
+here, the fix is to add a hook to the sleep process that unmounts all memory
+cards. Put the following script in the <code>/etc/pm/sleep.d/</code> directory.  </p>
+<div class="highlight"><pre><span class="c">#!/bin/bash</span>
+
+<span class="k">case</span> <span class="nv">$1</span> in
+hibernate|suspend<span class="o">)</span>
+umount /dev/mmcblk*
+    ;;
+<span class="c">#    thaw|resume)</span>
+<span class="c">#        ;;</span>
+*<span class="o">)</span>  <span class="nb">echo</span> <span class="nv">$1</span>
+    ;;
+<span class="k">esac</span>
+<span class="nb">exit </span>0
+</pre></div>
+
+
+<p>Then make it&nbsp;executable.</p>
+<p>Addendum: Turned out it wasn&#8217;t a bout of file system madness, it was the <span class="caps">SSD</span> dying.
+ I sent it into Dell and got it back a week and a half&nbsp;later.</p>
+</article>
+
+        </div>
+      </div>
+    </div>
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class="col-md-offset-3 col-md-3">
+            <ul>
+              <li>About</li>
+              <li><a href="/archives.html">Archives</a></li>
+            </ul>
+          </div>
+          <div class="col-md-3">
+            <p>&copy; Will Ross blahblah</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <script src="//code.jquery.com/jquery.js"></script>
+    <script src="theme/js/bootstrap.min.js"></script>
+  </body>
+</html>

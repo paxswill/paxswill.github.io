@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Multimedia Keys in&nbsp;Xfce | 
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Stylesheets -->
+    <link rel="stylesheet" media="screen" href="/theme/css/bootstrap.css">
+    <link rel="stylesheet" href="/theme/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="/theme/css/style.css">
+    <link rel="stylesheet" href="/theme/css/pygments.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <header class="col-sm-offset-2 col-sm-8 col-md-offset-1 col-md-2">
+          <h1><a href="/">Disaster Area</a><br class="visible-md visible-lg">
+            <small>
+              <a href="mailto:paxswill@paxswill.com"><i class="icon-envelope"></i></a>
+              <a href="https://github.com/paxswill"><i class="icon-github-sign"></i></a>
+              <a href="http://stackoverflow.com/users/96454"><i class="icon-stackexchange"></i></a>
+            </small>
+          </h1>
+        </header>
+        <div class="clearfix hidden-md hidden-lg"></div>
+        <div class="col-sm-2 hidden-md hidden-lg"></div>
+        <div class="col-sm-8 col-md-6">
+<article>
+<h2>
+  <a href="/blog/2011/09/28/multimedia-keys-in-xfce/">Multimedia Keys in&nbsp;Xfce</a>
+<small><time datetime="2011-09-28 17:56" pubdate>
+  28 September 2011
+</time>
+</small></h2>
+
+<p>After I got my <a href="linky">keyboard working</a>, I wanted to get my media keys
+working with my system. In <span class="caps">GNOME</span> there are some helper tools, but I
+didn&#8217;t find a whole lot information abuot setting them up with Xfce. One
+of the features I really wanted was a broadcast/multiple application
+system, similar to what has been done in <span class="caps">OS</span> X where the media keys
+interact with the last used media application. To this end I used
+<a href="http://www.remoot.org/">Remoot</a>. While Remoot hasn&#8217;t been updated in a
+long time, it still works well, and has the features I&nbsp;need.</p>
+<p>To install, just download the .deb
+<a href="http://sourceforge.net/projects/remoot/files/remoot/0.9/remoot.deb/download">package</a>
+ and install it with <code>dpkg</code>. The only dependency I encountered was
+ <code>perl-tk</code>, so install that as&nbsp;well.</p>
+<div class="highlight"><pre><span class="c"># aptitude install perl-tk</span>
+<span class="c"># dpkg -i remoot.deb</span>
+</pre></div>
+
+
+<p>To actually have the keys do something, open the Keyboard settings
+dialog and add shortcuts for <code>/usr/bin/remoot action</code>, where action is
+<code>playpause</code>, <code>prev</code>, and <code>next</code>.</p>
+<p><span class="caps">NOTE</span>: Add <span class="caps">VLC</span>&nbsp;support</p>
+</article>
+
+        </div>
+      </div>
+    </div>
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class="col-md-offset-3 col-md-3">
+            <ul>
+              <li>About</li>
+              <li><a href="/archives.html">Archives</a></li>
+            </ul>
+          </div>
+          <div class="col-md-3">
+            <p>&copy; Will Ross blahblah</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <script src="//code.jquery.com/jquery.js"></script>
+    <script src="theme/js/bootstrap.min.js"></script>
+  </body>
+</html>

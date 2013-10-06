@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Let&#8217;s Write a Linux&nbsp;Patch | 
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Stylesheets -->
+    <link rel="stylesheet" media="screen" href="/theme/css/bootstrap.css">
+    <link rel="stylesheet" href="/theme/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="/theme/css/style.css">
+    <link rel="stylesheet" href="/theme/css/pygments.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <header class="col-sm-offset-2 col-sm-8 col-md-offset-1 col-md-2">
+          <h1><a href="/">Disaster Area</a><br class="visible-md visible-lg">
+            <small>
+              <a href="mailto:paxswill@paxswill.com"><i class="icon-envelope"></i></a>
+              <a href="https://github.com/paxswill"><i class="icon-github-sign"></i></a>
+              <a href="http://stackoverflow.com/users/96454"><i class="icon-stackexchange"></i></a>
+            </small>
+          </h1>
+        </header>
+        <div class="clearfix hidden-md hidden-lg"></div>
+        <div class="col-sm-2 hidden-md hidden-lg"></div>
+        <div class="col-sm-8 col-md-6">
+<article>
+<h2>
+  <a href="/blog/2011/09/30/lets-write-a-linux-patch/">Let&#8217;s Write a Linux&nbsp;Patch</a>
+<small><time datetime="2011-09-30 00:00" pubdate>
+  30 September 2011
+</time>
+</small></h2>
+
+<p>Due to an unfortunate accident involving a glass of water and my main
+laptop, I&#8217;ve been using my netbook running Debian Sid. To make working
+with code easier, I purchased an Apple Wireless Keyboard, but I was
+suprised to find it wasn&#8217;t completely supported. Namely the &#8216;Fn&#8217; key
+didn&#8217;t register, meaning I couldn&#8217;t use the multmedia keys or use the
+simulated Page Up/Down, Home and End keys.
+<!-- more --></p>
+<h2>Writing the&nbsp;patch</h2>
+<p>Most solutions to this problem are from 2008 for Linux kernel 2.6.25.
+Shortly after these bugs were filed, the kernel added special handing
+for these keyboards. But this is 2011 and I&#8217;m using the 3.0 release of
+the kernel. There&#8217;s a crucial hint in most of the older patches though.
+For example, here&#8217;s a patch for kernel&nbsp;2.6.25.</p>
+<p>{% codeblock 2.6.25 Patch lang:diff http://chezphil.org/apple-alu-bluetooth-kb-linux/ Source %}
+&#8211; linux-2.6.25/net/bluetooth/hidp/core.c      2008-04-17 03:49:44.000000000 +0100
++++ /usr/local/src/linux-2.6.25/net/bluetooth/hidp/core.c       2008-05-25 13:26:32.000000000 +0100
+@@ -678,6 +678,8 @@
+ } hidp_blacklist[] = {
+        /<em> Apple wireless Mighty Mouse </em>/
+        { 0x05ac, 0x030c, HID_QUIRK_MIGHTYMOUSE | HID_QUIRK_INVERT_HWHEEL },
++        /<em> Apple Bluetooth alu <span class="caps">ISO</span> keyboard </em>/
++        { 0x05ac, 0x022d, HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD&nbsp;},</p>
+<div class="highlight"><pre>    <span class="p">{</span> <span class="p">}</span>     <span class="cm">/* Terminating entry */</span>
+</pre></div>
+
+
+<p _="%" endcodeblock="endcodeblock">};</p>
+<p>The <code>0x05ac</code> is Apple&#8217;s vendor <span class="caps">ID</span>, while <code>0x022d</code> is the product <span class="caps">ID</span> of
+the keyboard he has. A quick check confirmed that my keyboard has the
+product <span class="caps">ID</span> <code>0x0255</code>.</p>
+<p>To add support for this keyboard we need to look for where quirks mode
+is enabled for various devices. Between now and 2008 the method for
+defining quirks was rewritten to be more developer friendly. The three
+files we need to modify are <code>drivers/hid/hid-core.c</code>,
+<code>drivers/hid/hid-apple.c</code> and <code>drivers/hid/hid-ids.c</code></p>
+<p><code>hid-ids.c</code> is the easiest. We just need to define a constant for this
+keyboard&#8217;s product <span class="caps">ID</span>. Because there were another set of variants in
+2009, I just modified the form to use&nbsp;2011.</p>
+<p>{% include_code 2011-09-28/hid-ids.diff&nbsp;%}</p>
+<p>I only have the <span class="caps">ANSI</span> version of the keyboard, but as European and
+Japanese users start using them they can add the correct product&nbsp;IDs.</p>
+<p>Next we modify <code>hid-core.c</code> to tell it to use quirks with devices
+matching Apple&#8217;s vendor <span class="caps">ID</span> and the new product&nbsp;<span class="caps">ID</span>.</p>
+<p>{% include_code 2011-09-28/hid-core.diff&nbsp;%}</p>
+<p>And finally we modify <code>hid-apple.c</code> to use the specific quirks for this&nbsp;keyboard.</p>
+<p>{% include_code 2011-09-28/hid-apple.diff&nbsp;%}</p>
+<h2>Testing the&nbsp;patch</h2>
+<p>To test the patch, you will need to be able to build your modified kernel.
+Debian makes it pretty easy, but if you&#8217;re using another distribution it
+will be different. Install <code>kernel-package</code> through apt, and then&nbsp;run</p>
+<div class="highlight"><pre><span class="c"># make-kpkg -initrd kernel_image</span>
+</pre></div>
+
+
+<p>in the root of the kernel source tree. Currently there is a bug with
+<code>kernel-package</code>, but the bug can be fixed by applying this&nbsp;patch.</p>
+<p _="%" endcodeblock="endcodeblock">{% codeblock kernel-package Patch lang:diff http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=638012#21 Source %}
+&#8211; ruleset/targets/common.mk-orig  2011-08-17 18:24:16.048922011 +0300
++++ ruleset/targets/common.mk   2011-08-17 20:08:26.623916939 +0300
+@@ -323,8 +323,13 @@ ifeq ($(DEB_HOST_ARCH_OS), linux)
+     endif
+   endif
+   ifneq ($(strip $(shell grep -E ^[^#]*CONFIG_LGUEST $(CONFIG_FILE))),)
++   if [ -e Documentation/lguest ]; then \
+    $(<span class="caps">MAKE</span>) $(do_parallel) $(EXTRAV_ARG) $(FLAV_ARG) <span class="caps">ARCH</span>=$(KERNEL_ARCH) \
+-               $(CROSS_ARG) -C Documentation/lguest
++               $(CROSS_ARG) -C Documentation/lguest; \
++   elif [ -e Documentation/virtual/lguest ]; then \
++   $(<span class="caps">MAKE</span>) $(do_parallel) $(EXTRAV_ARG) $(FLAV_ARG) <span class="caps">ARCH</span>=$(KERNEL_ARCH) \
++               $(CROSS_ARG) -C Documentation/virtual/lguest; \
++   fi
+   endif
+ else
+   ifeq ($(DEB_HOST_ARCH_OS),&nbsp;kfreebsd)</p>
+<p>To apply the patch, save it somewhere, move to <code>/usr/share/kernel-package</code> and
+run this&nbsp;command:</p>
+<div class="highlight"><pre><span class="c"># patch -p0 &lt; /path/to/the/patch.patch</span>
+</pre></div>
+
+
+<p>Building the kernel can take a while, but requires some interaction when
+done this way. Once the the kernel image is built, you can install it&nbsp;with</p>
+<div class="highlight"><pre><span class="c"># dpkg -i ../linux-image-3.1.0-rc8+_3.1.0-rc8+-10.00.Custom_i386.deb</span>
+</pre></div>
+
+
+<p>Reboot and verify that your patch works. In this case it does, and all
+the special keys were sending the proper key codes (verified with <code>xev</code>).</p>
+<h2>Submitting the&nbsp;patch</h2>
+<p>It&#8217;s a good idea to read the <code>Documentation/SubmittingPatches</code> document,
+as it covers the basics of submitting patches and the style expected in
+your correspondence. If (like me), you use git during your development,
+you can use it to create your&nbsp;patches.</p>
+<div class="highlight"><pre><span class="err">$</span> <span class="nx">git</span> <span class="nb">format</span><span class="na">-patch</span> <span class="o">-&lt;</span><span class="nb">N</span><span class="o">&gt;</span> <span class="na">-s</span> <span class="o">--</span><span class="nb">subject</span><span class="na">-prefix</span><span class="o">=</span><span class="s1">&#39;<span class="caps">PATCH</span>&#39;</span>
+</pre></div>
+
+
+<p>If you run that in your Linux tree, and replace <N> with the number of
+commits your patchset comprises, you will get a bunch of files ready to
+mail off. Well, almost. <code>git format-patch</code> creates files that are ready
+to be sent out with standard <span class="caps">CLI</span> email utilities. If you&#8217;re using
+another email client, you can copy-paste the information into the
+appropriate fields. The <code>-s</code> adds a &#8220;Signed-off-by&#8221; line. This is used
+by the Linux kernel to verify that each line of code is legally allowed
+to be released under the&nbsp;<span class="caps">GPL</span>.</p>
+<p>Now that you have the content of your email, you should choose where to
+send it. As the <code>SubmittingPatches</code> document says, you should read
+through the <code>MAINTAINERS</code> list to find the person in charge of the area
+you&#8217;ve changed. In my case it was Dmitry Torokhov, as he is the
+maintainer for input drivers. You also should <span class="caps">CC</span> a couple of other
+entities. Because this is a change to the input subsection, the
+linux-input list should be <span class="caps">CC</span>&#8217;d. I did not <span class="caps">CC</span> linux-kernel as most of
+the examples on the
+<a href="http://www.spinics.net/lists/linux-input/">list archives</a> were not
+including it. Before you send your email to any list, make sure to
+subscribe to it, or the email will not be received&nbsp;properly.</p>
+</article>
+
+        </div>
+      </div>
+    </div>
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class="col-md-offset-3 col-md-3">
+            <ul>
+              <li>About</li>
+              <li><a href="/archives.html">Archives</a></li>
+            </ul>
+          </div>
+          <div class="col-md-3">
+            <p>&copy; Will Ross blahblah</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <script src="//code.jquery.com/jquery.js"></script>
+    <script src="theme/js/bootstrap.min.js"></script>
+  </body>
+</html>
