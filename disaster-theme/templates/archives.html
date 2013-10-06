@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% import "macros.html" as macros %}
+
+{% block content %}
+{% set last_year = 9999 %}
+{% for article in articles %}
+  {% if last_year > article.date.year %}
+    {% set last_year = article.date.year %}
+    <h2>{{ last_year }}</h2>
+  {% endif %}
+  <article>
+  {{ macros.article_title(article) }}
+  </article>
+{% endfor %}
+{% endblock content %}
