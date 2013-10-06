@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% import "macros.html" as macros %}
+
+{#{% block title %}{{ macros.title(article.title) }}{% endblock title%}#}
+
+{% block content %}
+{#
+ # This silly chunk figures out which period this is an archive for.
+ # Hopefully sometime in the future Pelican will provide this as an actual
+ # variable.
+ #}
+{% set url_count = (output_file.split('/')|length) %}
+{% if YEAR_ARCHIVE_SAVE_AS %}
+  {% set year_count = YEAR_ARCHIVE_SAVE_AS.split('/')|length %}
+{% else %}
+  {% set year_count = 0 %}
+{% endif %}
+{% if MONTH_ARCHIVE_SAVE_AS %}
+  {% set month_count = MONTH_ARCHIVE_SAVE_AS.split('/')|length %}
+{% else %}
+  {% set month_count = 0 %}
+{% endif %}
+{% if DAY_ARCHIVE_SAVE_AS %}
+  {% set day_count = DAY_ARCHIVE_SAVE_AS.split('/')|length %}
+{% else %}
+  {% set day_count = 0 %}
+{% endif %}
+
+{% if url_count == year_count %}
+  {# This covers a year period #}
+  <h2>Archives for {{ dates[0].date|strftime('%Y') }}</h2>
+{% elif url_count == month_count %}
+  {# This covers a month period #}
+  <h2>Archives for {{ dates[0].date|strftime('%B %Y') }}</h2>
+{% elif url_count == day_count %}
+  {# This covers a day period #}
+  <h2>Archives for {{ dates[0].date|strftime('%B %d, %Y') }}</h2>
+{% endif %}
+{% for date in dates %}
+  {{ macros.article_lede(date) }}
+{% endfor %}
+{% endblock content %}
+
