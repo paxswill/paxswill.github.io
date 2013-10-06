@@ -49,3 +49,12 @@ footer {
   background-color: #e87600;
   color: #fff;
 }
+
+footer a {
+  color: #fff;
+}
+
+footer a:hover,
+footer a:focus {
+  color: #ddd;
+}
