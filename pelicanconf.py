@@ -45,6 +45,14 @@ PAGE_DIR = ''
 PAGE_EXCLUDES = ('blog', )
 PAGE_URL = '{slug}/'
 PAGE_SAVE_AS = PAGE_URL + 'index.html'
+
+# Disable tag, category and author pages
+CATEGORY_SAVE_AS = False
+TAG_SAVE_AS = False
+TAGS_SAVE_AS = False
+AUTHOR_SAVE_AS = False
+AUTHORS_SAVE_AS = False
+
 # Only process indicies and archives right now
 DIRECT_TEMPLATES = ( 'index', 'archives' )
 
