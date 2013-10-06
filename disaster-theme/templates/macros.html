@@ -6,12 +6,18 @@
 {% endif %}
 {% endmacro %}
 
+{% macro article_timestamp(article) %}
+<time datetime="{{ article.date|strftime('%Y-%m-%d %H:%M') }}" pubdate>
+  {{ article.locale_date }}
+</time>
+{% endmacro %}
+
 {% macro article_format(article) %}
 <article>
-<h2><a href="{{ article.url }}">{{ article.title }}</a></h2>
+<h2>
+  <a href="{{ SITEURL }}/{{ article.url }}">{{ article.title }}</a>
+  <small>{{ article_timestamp(article) }}</small>
+</h2>
 {{ article.content }}
-  <small>
-    <time datetime="{{ article.date|strftime('%Y-%m-%d %H:%M') }}" pubdate>{{ article.locale_date }}</time>
-  </small>
 </article>
 {% endmacro %}
