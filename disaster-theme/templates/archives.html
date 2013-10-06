@@ -3,7 +3,7 @@
 
 {% block content %}
 {% set last_year = 9999 %}
-{% for article in dates|reverse %}
+{% for article in dates %}
   {% if last_year > article.date.year %}
     {% set last_year = article.date.year %}
     <h2>{{ last_year }}</h2>
