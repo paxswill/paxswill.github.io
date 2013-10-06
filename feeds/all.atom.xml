@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Disaster Area</title><link href="http://paxswill.com/" rel="alternate"></link><link href="http://paxswill.com/feeds/all.atom.xml" rel="self"></link><id>http://paxswill.com/</id><updated>2012-02-07T16:01:00-05:00</updated><entry><title>Autotools Trick: config.site</title><link href="http://paxswill.com/blog/2012/02/07/autotool-trick-config-dot-site/" rel="alternate"></link><updated>2012-02-07T16:01:00-05:00</updated><author><name>Will Ross</name></author><id>tag:paxswill.com,2012-02-07:blog/2012/02/07/autotool-trick-config-dot-site/</id><summary type="html">&lt;p&gt;This is a quick trick for those who have to continually set up common settings
+when using Autotools style &lt;code&gt;configure&lt;/code&gt; scripts. One of the initial steps a
+configure script does is to look for a &lt;code&gt;$prefix/share/config.site&lt;/code&gt;
+file and then to execute its contents. An example of how this may be useful is
+if you have some common libraries that are not on the default search paths for
+your compiler and you want &lt;code&gt;CFLAGS&lt;/code&gt; and &lt;code&gt;LDFLAGS&lt;/code&gt; set automatically. In my case
+I commonly use the Nvidia OpenCL headers, which on the machines I use are
+installed to &lt;code&gt;/usr/local/cuda/include&lt;/code&gt;. To use them, I could have a config.log
+file like so in my default installation&amp;nbsp;prefix.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="nv"&gt;&lt;span class="caps"&gt;CPPFLAGS&lt;/span&gt;&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;${&lt;span class="caps"&gt;CPPFLAGS&lt;/span&gt;} -I/usr/local/cuda/include&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now when I run &lt;code&gt;configure&lt;/code&gt;, it picks up that additional flag for the C&amp;nbsp;preprocessor.&lt;/p&gt;
+&lt;p&gt;A more complicated example is if you maintain a seperate prefix. I do this in
+my home folder for my &lt;span class="caps"&gt;CS&lt;/span&gt; department account. Because my home folder is shared
+over &lt;span class="caps"&gt;NFS&lt;/span&gt; to all of the department&amp;#8217;s machines, and many of them have different
+architectures and operating environments, I keep a prefix for different classes
+of machines. For&amp;nbsp;example:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="o"&gt;~/&lt;/span&gt;&lt;span class="n"&gt;local&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;
+        &lt;span class="n"&gt;fast&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;sparc&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;
+        &lt;span class="n"&gt;fast&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;ubuntu&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;
+        &lt;span class="n"&gt;nv&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;s1070&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;
+        &lt;span class="n"&gt;nv&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;c870&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;
+        &lt;span class="n"&gt;src&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The &lt;code&gt;src&lt;/code&gt; directory is just a repository for all of the source packages that I 
+end up installing in the other directories. In my &lt;code&gt;.bashrc&lt;/code&gt; I export a
+variable, &lt;code&gt;LOCAL_PREFIX&lt;/code&gt;, that is set to the prefix for the machine I&amp;#8217;m logging
+into. Then, all I need to do is &lt;code&gt;./configure --prefix=$LOCAL_PREFIX&lt;/code&gt; and the
+compiler flags are properly set for that prefix. Another possibility is to
+export the &lt;code&gt;CONFIG_SITE&lt;/code&gt; variable set to the path to the config.site file for
+that machine&amp;nbsp;configuration.&lt;/p&gt;
+&lt;p&gt;More details about config.site can be found in the &lt;a href="http://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/autoconf-2.68/html_node/Site-Defaults.html#Site-Defaults"&gt;Autoconf manual&lt;/a&gt;.&lt;/p&gt;</summary><category term="autoconf"></category><category term="code"></category></entry><entry><title>NSString Cons</title><link href="http://paxswill.com/blog/2011/08/14/nsstring-cons/" rel="alternate"></link><updated>2011-08-14T06:54:00-04:00</updated><author><name>Will Ross</name></author><id>tag:paxswill.com,2011-08-14:blog/2011/08/14/nsstring-cons/</id><summary type="html">&lt;p&gt;One of the fundamental operators in functional languages is &amp;#8216;cons&amp;#8217;. It
+concatenates lists of things together, and since strings are usually treated as
+lists of characters, cons gets a lot of use in string processing as well. One
+of the cool tricks I saw done with Objective-C a while ago was implementing
+cons on NSString, using &lt;code&gt;:&lt;/code&gt; like Haskell and &lt;span class="caps"&gt;ML&lt;/span&gt; do. I have been unable to find
+the original site, so I decided to reimplement it myself&amp;nbsp;recently.&lt;/p&gt;
+&lt;!--more--&gt;
+
+&lt;p&gt;A quick caveat to the following: this uses Objective-C trickery that may not be
+very safe in a production environment. Also, the upcoming Automatic Reference
+Counting in Clang/&lt;span class="caps"&gt;LLVM&lt;/span&gt; 3.0 will not compile this code. With that out of the
+way, lets look at how we&amp;#8217;re going to do this. In Objective-C, methods are
+backed by a concrete implementation in the form of a standard C function. The
+runtime uses the &lt;a href="http://developer.apple.com/library/mac/documentation/Cocoa/Reference/ObjCRuntimeRef/Reference/reference.html#//apple_ref/doc/uid/TP40001418-CH3g-BAJFGBJF"&gt;&lt;code&gt;IMP&lt;/code&gt;&lt;/a&gt; type for this, which is defined&amp;nbsp;as&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="kt"&gt;id&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="kt"&gt;&lt;span class="caps"&gt;IMP&lt;/span&gt;&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="kt"&gt;id&lt;/span&gt; &lt;span class="n"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;&lt;span class="caps"&gt;SEL&lt;/span&gt;&lt;/span&gt; &lt;span class="n"&gt;selector&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;...)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The &lt;code&gt;...&lt;/code&gt; in this case stands for additional arguments for the method. For
+example, &lt;code&gt;[@"foo" stringByAppendingString:@"bar"]&lt;/code&gt; will eventually be executed
+by a function matching the prototype&amp;nbsp;below.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="kt"&gt;id&lt;/span&gt; &lt;span class="n"&gt;functionName&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;id&lt;/span&gt; &lt;span class="n"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;&lt;span class="caps"&gt;SEL&lt;/span&gt;&lt;/span&gt; &lt;span class="n"&gt;sel&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;NSString&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;otherString&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Additional arguments are just tacked onto the end. This can be combined with
+standard C varargs. The only caveat is we need to signal the end of the varargs
+somehow. I used &lt;code&gt;nil&lt;/code&gt;.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="kt"&gt;id&lt;/span&gt; &lt;span class="nf"&gt;stringCons&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;id&lt;/span&gt; &lt;span class="n"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;&lt;span class="caps"&gt;SEL&lt;/span&gt;&lt;/span&gt; &lt;span class="n"&gt;selector&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;...){&lt;/span&gt;
+    &lt;span class="kt"&gt;va_list&lt;/span&gt; &lt;span class="n"&gt;strings&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;NSMutableString&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;fullString&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[[&lt;/span&gt;&lt;span class="n"&gt;NSMutableString&lt;/span&gt; &lt;span class="n"&gt;alloc&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="n"&gt;initWithString&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;self&lt;/span&gt;&lt;span class="p"&gt;];&lt;/span&gt;
+    &lt;span class="n"&gt;va_start&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;strings&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;selector&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="kt"&gt;id&lt;/span&gt; &lt;span class="n"&gt;currentString&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;nil&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="c1"&gt;// End on nil&lt;/span&gt;
+    &lt;span class="k"&gt;while&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;currentString&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;va_arg&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;strings&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;id&lt;/span&gt;&lt;span class="p"&gt;))){&lt;/span&gt;
+        &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;fullString&lt;/span&gt; &lt;span class="n"&gt;appendString&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;currentString&lt;/span&gt;&lt;span class="p"&gt;];&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="n"&gt;va_end&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;strings&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;fullString&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;There are two approaches to adding a method to a class at runtime in
+Objective-C. The  normal way is to use
+&lt;a href="http://developer.apple.com/library/mac/documentation/Cocoa/Reference/ObjCRuntimeRef/Reference/reference.html#//apple_ref/c/func/class_addMethod"&gt;&lt;code&gt;class_addMethod&lt;/code&gt;&lt;/a&gt;. This is enough in most cases, but because
+we have a variable length selector, we can&amp;#8217;t use this method. Another way
+methods can be added is with the dynamic method resolution available through
+NSObject (Mike Ash touches on this method in a post on
+&lt;a href="http://mikeash.com/pyblog/friday-qa-2009-03-27-objective-c-message-forwarding.html"&gt;message forwarding&lt;/a&gt;).&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;+&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;&lt;span class="caps"&gt;BOOL&lt;/span&gt;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="nf"&gt;resolveInstanceMethod:&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;&lt;span class="caps"&gt;SEL&lt;/span&gt;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="nv"&gt;sel&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="c1"&gt;// Check that the selector is just &amp;#39;:&amp;#39; characters&lt;/span&gt;
+    &lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="kt"&gt;char&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;checkName&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sel_getName&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sel&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="kt"&gt;&lt;span class="caps"&gt;BOOL&lt;/span&gt;&lt;/span&gt; &lt;span class="n"&gt;isCons&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;&lt;span class="caps"&gt;YES&lt;/span&gt;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kt"&gt;char&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;checkName&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;];&lt;/span&gt;
+    &lt;span class="k"&gt;while&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="sc"&gt;&amp;#39;\0&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="sc"&gt;&amp;#39;:&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+            &lt;span class="n"&gt;isCons&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;&lt;span class="caps"&gt;NO&lt;/span&gt;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="k"&gt;break&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+        &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;checkName&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;];&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="c1"&gt;// Add the method, or pass this message up the chain&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;isCons&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+        &lt;span class="c1"&gt;// Make the type string&lt;/span&gt;
+        &lt;span class="kt"&gt;size_t&lt;/span&gt; &lt;span class="n"&gt;typesSize&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;4&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="kt"&gt;char&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;types&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;malloc&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;sizeof&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;char&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;typesSize&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;types&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="sc"&gt;&amp;#39;@&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;types&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="sc"&gt;&amp;#39;@&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;types&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="sc"&gt;&amp;#39;:&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;j&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="n"&gt;j&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;typesSize&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="n"&gt;j&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+            &lt;span class="n"&gt;types&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;j&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="sc"&gt;&amp;#39;@&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+        &lt;span class="n"&gt;types&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;typesSize&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="sc"&gt;&amp;#39;\0&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="c1"&gt;// Add the method&lt;/span&gt;
+        &lt;span class="n"&gt;class_addMethod&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;self&lt;/span&gt; &lt;span class="n"&gt;class&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;sel&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;stringCons&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;types&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;&lt;span class="caps"&gt;YES&lt;/span&gt;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;&lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;super&lt;/span&gt; &lt;span class="n"&gt;resolveInstanceMethod&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;sel&lt;/span&gt;&lt;span class="p"&gt;];&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Here all were doing is checking to see if the selector is completely made up
+of &amp;#8216;:&amp;#8217; characters. If it is, we add the &lt;code&gt;stringCons&lt;/code&gt; &lt;span class="caps"&gt;IMP&lt;/span&gt; from above for that
+selector. Note the else block at the end. The call to
+&lt;code&gt;[super resolveInstanceMethod:sel]&lt;/code&gt; is very important, as other parts of a
+class may depend on this dynamic method&amp;nbsp;resolution.&lt;/p&gt;
+&lt;p&gt;The final hurdle is how to add &lt;code&gt;+resolveInstanceMethod:&lt;/code&gt; to NSString. The
+safest way would be to subclass NSString, but since NSString is a class cluster
+this is not possible. I ended up using a category, but a safer choice might be
+to use method swizzling to insert our method in addition to any NSString may
+have&amp;nbsp;defined.&lt;/p&gt;
+&lt;p&gt;That&amp;#8217;s it to adding a cons-like operator to NSString in Objective-C. To use it,
+just insert it between instances of NSString ending with &lt;code&gt;nil&lt;/code&gt;, like&amp;nbsp;below.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;NSString&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;one&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;@&amp;quot;1&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="n"&gt;NSString&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;two&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;@&amp;quot;2&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="n"&gt;NSString&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;three&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;@&amp;quot;3&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="n"&gt;NSString&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;all&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;one&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;two&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;three&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="nb"&gt;nil&lt;/span&gt;&lt;span class="p"&gt;];&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</summary><category term="code"></category></entry><entry><title>cWavelet</title><link href="http://paxswill.com/blog/2011/03/28/cwavelet-weekend/" rel="alternate"></link><updated>2011-03-28T00:00:00-04:00</updated><author><name>Will Ross</name></author><id>tag:paxswill.com,2011-03-28:blog/2011/03/28/cwavelet-weekend/</id><summary type="html">&lt;p&gt;Weekend project I made: &lt;a href="https://github.com/paxswill/cwavelet"&gt;cWavelet&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;It&amp;#8217;s a simple wavelet library written in pure C. I&amp;#8217;ve been trying to wrap
+ my head around wavelets off and on for about three months, and I finally 
+got them enough to write a library. It is still being developed, but it does
+ simple forward transforms (as far as I can tell correctly) right now. In the 
+future, I hope to implement portions of it in OpenCL and/or &lt;span class="caps"&gt;MPI&lt;/span&gt; so I can
+ try it out on the clusters at&amp;nbsp;school.&lt;/p&gt;</summary><category term="code"></category></entry><entry><title>Ubuntu 10.04 on a Dell Mini 9</title><link href="http://paxswill.com/blog/2010/05/01/ubuntu-1004-dell-mini-9/" rel="alternate"></link><updated>2010-05-01T00:00:00-04:00</updated><author><name>Will Ross</name></author><id>tag:paxswill.com,2010-05-01:blog/2010/05/01/ubuntu-1004-dell-mini-9/</id><summary type="html">&lt;p&gt;The Mac &lt;span class="caps"&gt;OS&lt;/span&gt; X install on my Mini 9 was recently borked (friend was borrowing it,
+and an unclean shutdown corrupted the file system), and I didn&amp;#8217;t have the
+install discs on me. I&amp;#8217;d also been messing with the Lucid Lynx beta in a &lt;span class="caps"&gt;VM&lt;/span&gt; on
+my machine, and was very impressed with the level of polish, so I decided to
+install Ubuntu on the Mini again and see how it went.
+&lt;!--more--&gt;
+This was a couple days before the release date, so I downloaded the release
+candidate and ran from there. I&amp;#8217;ve used both the normal desktop and netbook
+remix in previous versions of Ubuntu, and for my workflow I prefer using the 
+normal desktop. As there isn&amp;#8217;t a desktop .img available, I downloaded the
+desktop &lt;span class="caps"&gt;ISO&lt;/span&gt; and used the &lt;span class="caps"&gt;USB&lt;/span&gt; IMage Writer in my &lt;span class="caps"&gt;VM&lt;/span&gt; to copy the &lt;span class="caps"&gt;ISO&lt;/span&gt; to a flash
+drive. Installation had a minor hitch in that the first install didn&amp;#8217;t seem to 
+take, in that after the installer was finished and the system rebooted, nothing
+showed up. I booted to the &lt;span class="caps"&gt;USB&lt;/span&gt; stick again, reinstalled, and everything worked 
+after&amp;nbsp;that.&lt;/p&gt;
+&lt;p&gt;Hardware support is very much improved in this version (I&amp;#8217;ve previously used
+8.04 and 9.04). I didn&amp;#8217;t have to make any configuration changes to use sound
+hardware, Bluetooth 
+worked right away, 3D acceleration was a given as I have an Intel &lt;span class="caps"&gt;GPU&lt;/span&gt;, and
+after I installed the Broadcom &lt;span class="caps"&gt;STA&lt;/span&gt; driver through the restricted driver 
+installer, Wifi worked as well. Sleep works as well as it did under 9.10, as
+having an &lt;span class="caps"&gt;SD&lt;/span&gt; card mounted when you try sleeping causes the suspend process to
+hang. The fix is detailed in &lt;a href="http://www.mydellmini.com/forum/ubuntu-netbook-remix/14722-suspend-hibernate-mini-9-broken-3.html#post143677"&gt;this&lt;/a&gt; MyDellMini forum post. Reproduced
+here, the fix is to add a hook to the sleep process that unmounts all memory
+cards. Put the following script in the &lt;code&gt;/etc/pm/sleep.d/&lt;/code&gt; directory.  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/bin/bash&lt;/span&gt;
+
+&lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="nv"&gt;$1&lt;/span&gt; in
+hibernate|suspend&lt;span class="o"&gt;)&lt;/span&gt;
+umount /dev/mmcblk*
+    ;;
+&lt;span class="c"&gt;#    thaw|resume)&lt;/span&gt;
+&lt;span class="c"&gt;#        ;;&lt;/span&gt;
+*&lt;span class="o"&gt;)&lt;/span&gt;  &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="nv"&gt;$1&lt;/span&gt;
+    ;;
+&lt;span class="k"&gt;esac&lt;/span&gt;
+&lt;span class="nb"&gt;exit &lt;/span&gt;0
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Then make it&amp;nbsp;executable.&lt;/p&gt;
+&lt;p&gt;Addendum: Turned out it wasn&amp;#8217;t a bout of file system madness, it was the &lt;span class="caps"&gt;SSD&lt;/span&gt; dying.
+ I sent it into Dell and got it back a week and a half&amp;nbsp;later.&lt;/p&gt;</summary><category term="linux"></category><category term="code"></category></entry><entry><title>Thoughts on My Education (So Far)</title><link href="http://paxswill.com/blog/2008/12/10/thoughts-on-cs-education/" rel="alternate"></link><updated>2008-12-10T00:00:00-05:00</updated><author><name>Will Ross</name></author><id>tag:paxswill.com,2008-12-10:blog/2008/12/10/thoughts-on-cs-education/</id><summary type="html">&lt;p&gt;I was reading &lt;a href="http://itmanagement.earthweb.com/features/print.php/12297_3789981_1"&gt;this&lt;/a&gt; article
+ a bit ago. In it Bjarne Stroustrup talks about the inadequacies of American
+&lt;span class="caps"&gt;CS&lt;/span&gt; education. One point he brings up resonated with me. 
+&lt;!--more--&gt;
+I took &lt;span class="caps"&gt;AP&lt;/span&gt; Computer Science A and &lt;span class="caps"&gt;AB&lt;/span&gt; (in Java) in high school, and something we
+learned  early on was how to make our code look nice. Ideally, we didn’t put
+comments on the same line as code, and in &lt;span class="caps"&gt;AB&lt;/span&gt;, we had to document each method
+with preconditions, post conditions, and a general description of the method.
+While occasionally (and especially on the final project), the better practices
+fell to the wayside, we wrote nice code. Right now, I’m finishing up my first
+semester of college (intending to major in Computer Engineering), and noticed
+a jump between how I was taught &lt;span class="caps"&gt;CS&lt;/span&gt; in high school and how &lt;span class="caps"&gt;CS&lt;/span&gt; is taught in
+higher education. I took a &lt;span class="caps"&gt;CS&lt;/span&gt; course that was taught in C++, but we never
+talked about code style. We were referred to the textbook, which had a couple
+pages on it, but these were mostly what to comment. There was none of the
+things I was taught in Java, about you keep class data private, and segment
+everything into easily reusable parts. We were taught to just bang out code.
+One of my friends at another school was learning Java for the first time, and
+he had to write a class that held temperature data. He didn’t know what
+getters and setters were, and why you keep data private. The main class and the
+utility class were so interwoven, it would be near impossible to separate&amp;nbsp;them.&lt;/p&gt;
+&lt;p&gt;While most of us who took &lt;span class="caps"&gt;CS&lt;/span&gt; in my high school disliked how our teacher taught
+us, I now see why she went through all the little steps. People in my C++ class
+didn’t know why we used ints or longs, and what overflow is. All of us in &lt;span class="caps"&gt;AP&lt;/span&gt; &lt;span class="caps"&gt;CS&lt;/span&gt;
+could count in binary, and change bases at will. We didn’t learn about bitwise 
+operations in high school, but when I read about them now, I know why you can
+divide by two with a bitshift. Thanks Mrs.&amp;nbsp;C.&lt;/p&gt;</summary></entry></feed>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>The C&nbsp;Preprocessor | 
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="alternate" type="application/atom+xml" title="Disaster Area" href="http://paxswill.com/http://paxswill.com/feeds/all.atom.xml">
+    <!-- Stylesheets -->
+    <link rel="stylesheet" media="screen" href="http://paxswill.com/theme/css/bootstrap.css">
+    <link rel="stylesheet" href="http://paxswill.com/theme/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="http://paxswill.com/theme/css/style.css">
+    <link rel="stylesheet" href="http://paxswill.com/theme/css/pygments.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <header class="col-sm-offset-2 col-sm-8 col-md-offset-1 col-md-2">
+          <h1><a href="http://paxswill.com/">Disaster Area</a><br class="visible-md visible-lg">
+            <small>
+              <a href="mailto:paxswill@paxswill.com"><i class="icon-envelope"></i></a>
+              <a href="https://github.com/paxswill"><i class="icon-github-sign"></i></a>
+              <a href="http://stackoverflow.com/users/96454"><i class="icon-stackexchange"></i></a>
+            </small>
+          </h1>
+        </header>
+        <div class="clearfix hidden-md hidden-lg"></div>
+        <div class="col-sm-2 hidden-md hidden-lg"></div>
+        <div class="col-sm-8 col-md-6">
+<article>
+<h2>
+  <a href="/tutorials/cpp/">The C&nbsp;Preprocessor</a>
+<small><time datetime="2012-01-16 22:31" pubdate>
+  16 January 2012
+</time>
+</small></h2>
+
+<p>Here&#8217;s a moderately quick primer on how the C preprocessor works. The C preprocessor
+is a macro processor. It searches through its input, replacing certain sequences of
+characters (tokens) with other sequences. It has a fairly small language, with most
+of the primary token you&#8217;ll encounter listed&nbsp;below.</p>
+<div class="highlight"><pre><span class="cp">#include</span>
+<span class="cp">#if</span>
+<span class="cp">#ifdef</span>
+<span class="cp">#ifndef</span>
+<span class="cp">#else</span>
+<span class="cp">#elif</span>
+<span class="cp">#endif</span>
+<span class="cp">#define</span>
+<span class="cp">#undef</span>
+<span class="cp">#warning</span>
+<span class="cp">#error</span>
+</pre></div>
+
+
+<p>The <code>#ifdef</code> and <code>#ifndef</code> are shorthand for <code>#if defined</code> and <code>#if !defined</code> respectively.</p>
+<h2>#include</h2>
+<p><code>#include</code> is replaced with the contents of the file it references. The two ways to refer
+to a file are with brackets (<code>&lt;&gt;</code>) and with double quotes (<code>""</code>). The difference between
+them is that filenames specified using brackets are first searched for in the system
+directories, while those specified with quotes are first searched for in the working
+directory and then in the system&nbsp;directories.</p>
+<p>Now let&#8217;s see what&#8217;s going on. You can stop the <code>gcc</code> from going past preprocessing by giving
+it the <code>-E</code> flag. Here are the two files we&#8217;re going to&nbsp;use.</p>
+<p>foo.c</p>
+<div class="highlight"><pre><span class="kt">int</span> <span class="nf">addOne</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">){</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>bar.c</p>
+<div class="highlight"><pre><span class="cp">#include &quot;foo.c&quot;</span>
+
+<span class="kt">int</span> <span class="nf">addTwo</span><span class="p">(</span><span class="kt">int</span> <span class="n">y</span><span class="p">){</span>
+    <span class="k">return</span> <span class="n">addOne</span><span class="p">(</span><span class="n">addOne</span><span class="p">(</span><span class="n">y</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>Because <code>addTwo</code> uses the <code>addOne</code> function, foo.c needs to include bar.c. If I run
+<code>gcc -E</code> on each file, this is the&nbsp;result.</p>
+<p>foo.i</p>
+<div class="highlight"><pre><span class="cp"># 1 &quot;foo.c&quot;</span>
+<span class="cp"># 1 &quot;&lt;built-in&gt;&quot;</span>
+<span class="cp"># 1 &quot;&lt;command-line&gt;&quot;</span>
+<span class="cp"># 1 &quot;foo.c&quot;</span>
+<span class="kt">int</span> <span class="nf">addOne</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">){</span>
+ <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>bar.i</p>
+<div class="highlight"><pre><span class="cp"># 1 &quot;bar.c&quot;</span>
+<span class="cp"># 1 &quot;&lt;built-in&gt;&quot;</span>
+<span class="cp"># 1 &quot;&lt;command-line&gt;&quot;</span>
+<span class="cp"># 1 &quot;bar.c&quot;</span>
+<span class="cp"># 1 &quot;foo.c&quot; 1</span>
+<span class="kt">int</span> <span class="nf">addOne</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">){</span>
+ <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="cp"># 2 &quot;bar.c&quot; 2</span>
+
+<span class="kt">int</span> <span class="nf">addTwo</span><span class="p">(</span><span class="kt">int</span> <span class="n">y</span><span class="p">){</span>
+ <span class="k">return</span> <span class="n">addOne</span><span class="p">(</span><span class="n">addOne</span><span class="p">(</span><span class="n">y</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>Notice that the contents of foo.i are duplicated in bar.i (<code>.i</code> is the extension for
+preprocessed files). This is because the preprocessor copies in the contents of foo.c
+where the <code>#include "foo.c"</code> statement was. The preprocessor then contines processing the
+file, which now has whatever foo.c&nbsp;had.</p>
+<h2>Defining New&nbsp;Macros</h2>
+<p>The <code>#define</code> statement can be used to create new macros. A common example is if you have a&nbsp;constant.</p>
+<div class="highlight"><pre><span class="cp">#define GRAVITY_EARTH -9.81</span>
+</pre></div>
+
+
+<p>This creates a token named <code>GRAVITY_EARTH</code>, that will be replaced with the text <code>-9.81</code>. You
+can also create macros that don&#8217;t get replaced with anything, they just&nbsp;exist.</p>
+<div class="highlight"><pre><span class="cp">#define HAS_GRAVITY</span>
+</pre></div>
+
+
+<p>This defines a token called <code>HAS_GRAVITY</code>. If you have this text in your code, it will be&nbsp;deleted.</p>
+<h2>Include&nbsp;Guards</h2>
+<p>Let&#8217;s look back at our example files. Say I create a new file with a new function the uses the
+previous two&nbsp;files.</p>
+<p>baz.c</p>
+<div class="highlight"><pre><span class="cp">#include &quot;foo.c&quot;</span>
+<span class="cp">#include &quot;bar.c&quot;</span>
+
+<span class="kt">int</span> <span class="nf">addThree</span><span class="p">(</span><span class="kt">int</span> <span class="n">z</span><span class="p">){</span>
+    <span class="k">return</span> <span class="n">addOne</span><span class="p">(</span><span class="n">addTwo</span><span class="p">(</span><span class="n">z</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>And here&#8217;s the preprocessed&nbsp;version.</p>
+<p>baz.i</p>
+<div class="highlight"><pre><span class="cp"># 1 &quot;baz.c&quot;</span>
+<span class="cp"># 1 &quot;&lt;built-in&gt;&quot;</span>
+<span class="cp"># 1 &quot;&lt;command-line&gt;&quot;</span>
+<span class="cp"># 1 &quot;baz.c&quot;</span>
+<span class="cp"># 1 &quot;foo.c&quot; 1</span>
+<span class="kt">int</span> <span class="nf">addOne</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">){</span>
+ <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="cp"># 2 &quot;baz.c&quot; 2</span>
+<span class="cp"># 1 &quot;bar.c&quot; 1</span>
+<span class="cp"># 1 &quot;foo.c&quot; 1</span>
+<span class="kt">int</span> <span class="nf">addOne</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">){</span>
+ <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="cp"># 2 &quot;bar.c&quot; 2</span>
+
+<span class="kt">int</span> <span class="nf">addTwo</span><span class="p">(</span><span class="kt">int</span> <span class="n">y</span><span class="p">){</span>
+ <span class="k">return</span> <span class="n">addOne</span><span class="p">(</span><span class="n">addOne</span><span class="p">(</span><span class="n">y</span><span class="p">));</span>
+<span class="p">}</span>
+<span class="cp"># 3 &quot;baz.c&quot; 2</span>
+
+<span class="kt">int</span> <span class="nf">addThree</span><span class="p">(</span><span class="kt">int</span> <span class="n">z</span><span class="p">){</span>
+ <span class="k">return</span> <span class="n">addOne</span><span class="p">(</span><span class="n">addTwo</span><span class="p">(</span><span class="n">z</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>Notice that we have the contents of foo.c in there twice. This will cause a compilation error,
+as you can&#8217;t have two functions called the same thing. To get around this issue, a thing called
+include guards are used. Let&#8217;s look at new versions of our example&nbsp;files.</p>
+<p>foo-new.c</p>
+<div class="highlight"><pre><span class="cp">#ifndef INCLUDE_FOO_C</span>
+<span class="cp">#define INCLUDE_FOO_C</span>
+<span class="kt">int</span> <span class="nf">addOne</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">){</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="cp">#endif </span><span class="cm">/* INCLUDE_FOO_C */</span><span class="cp"></span>
+</pre></div>
+
+
+<p>bar-new.c</p>
+<div class="highlight"><pre><span class="cp">#ifndef INCLUDE_BAR_C</span>
+<span class="cp">#define INCLUDE_BAR_C</span>
+<span class="cp">#include &quot;foo-new.c&quot;</span>
+
+<span class="kt">int</span> <span class="nf">addTwo</span><span class="p">(</span><span class="kt">int</span> <span class="n">y</span><span class="p">){</span>
+    <span class="k">return</span> <span class="n">addOne</span><span class="p">(</span><span class="n">addOne</span><span class="p">(</span><span class="n">y</span><span class="p">));</span>
+<span class="p">}</span>
+<span class="cp">#endif </span><span class="cm">/* INCLUDE_BAR_C */</span><span class="cp"></span>
+</pre></div>
+
+
+<p>baz-new.c</p>
+<div class="highlight"><pre><span class="cp">#ifndef INCLUDE_BAZ_C</span>
+<span class="cp">#define INCLUDE_BAZ_C</span>
+<span class="cp">#include &quot;foo-new.c&quot;</span>
+<span class="cp">#include &quot;bar-new.c&quot;</span>
+
+<span class="kt">int</span> <span class="nf">addThree</span><span class="p">(</span><span class="kt">int</span> <span class="n">z</span><span class="p">){</span>
+    <span class="k">return</span> <span class="n">addOne</span><span class="p">(</span><span class="n">addTwo</span><span class="p">(</span><span class="n">z</span><span class="p">));</span>
+<span class="p">}</span>
+<span class="cp">#endif </span><span class="cm">/* INCLUDE_BAZ_C */</span><span class="cp"></span>
+</pre></div>
+
+
+<p>Now the preprocessed output of baz.c&nbsp;is </p>
+<div class="highlight"><pre><span class="cp"># 1 &quot;baz-new.c&quot;</span>
+<span class="cp"># 1 &quot;&lt;built-in&gt;&quot;</span>
+<span class="cp"># 1 &quot;&lt;command-line&gt;&quot;</span>
+<span class="cp"># 1 &quot;baz-new.c&quot;</span>
+
+
+<span class="cp"># 1 &quot;foo-new.c&quot; 1</span>
+
+
+<span class="kt">int</span> <span class="nf">addOne</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">){</span>
+ <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="cp"># 4 &quot;baz-new.c&quot; 2</span>
+<span class="cp"># 1 &quot;bar-new.c&quot; 1</span>
+
+
+
+
+<span class="kt">int</span> <span class="nf">addTwo</span><span class="p">(</span><span class="kt">int</span> <span class="n">y</span><span class="p">){</span>
+ <span class="k">return</span> <span class="n">addOne</span><span class="p">(</span><span class="n">addOne</span><span class="p">(</span><span class="n">y</span><span class="p">));</span>
+<span class="p">}</span>
+<span class="cp"># 5 &quot;baz-new.c&quot; 2</span>
+
+<span class="kt">int</span> <span class="nf">addThree</span><span class="p">(</span><span class="kt">int</span> <span class="n">z</span><span class="p">){</span>
+ <span class="k">return</span> <span class="n">addOne</span><span class="p">(</span><span class="n">addTwo</span><span class="p">(</span><span class="n">z</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>What&#8217;s happening here is called conditional compilation. In C, you can conditionally
+do thing with <code>if</code> statements. You can do the same thing with the C preprocessor. The
+new lines in the source files basically say &#8220;If INCLUDE_SOMETHING_C is <em>not</em> defined,
+keep going, if it <em>is</em> defined, skip to the <code>#endif</code> token and continue on from there.&#8221;
+Inside the conditional (the &#8220;keep going&#8221; part of the sentence above), we define
+INCLUDE_SOMETHING_C. By doing this, we ensure that the body of the conditional with
+all of our code is included only&nbsp;once.</p>
+</article>
+
+        </div>
+      </div>
+    </div>
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class="col-md-offset-3 col-md-3">
+            <ul>
+              <li>About</li>
+              <li><a href="http://paxswill.com/archives.html">Archives</a></li>
+            </ul>
+          </div>
+          <div class="col-md-3">
+            <p>&copy; Will Ross blahblah</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <script src="//code.jquery.com/jquery.js"></script>
+    <script src="theme/js/bootstrap.min.js"></script>
+  </body>
+</html>
