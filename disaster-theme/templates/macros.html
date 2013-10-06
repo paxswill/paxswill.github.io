@@ -21,3 +21,15 @@
 {{ article.content }}
 </article>
 {% endmacro %}
+
+{% macro previous_url(page) %}
+{% if page.has_previous() -%}
+  {{ page.paginator.page(page.previous_page_number()).url }}
+{%- endif %}
+{% endmacro %}
+
+{% macro next_url(page) %}
+{% if page.has_next() -%}
+  {{ page.paginator.page(page.next_page_number()).url }}
+{%- endif %}
+{% endmacro %}

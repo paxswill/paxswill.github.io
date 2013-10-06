@@ -1,0 +1,41 @@
+{% import "macros.html" as macros %}
+
+<ul class="pagination">
+  {# back arrow #}
+  {%- if articles_page.has_previous() %}
+    <li><a href="{{ SITEURL }}/{{ macros.previous_url(articles_page) }}">
+  {%- else %}
+    <li class="disabled"><span>
+  {%- endif -%}
+  &laquo
+  {%- if articles_page.has_previous() -%}
+    </a>
+  {% else -%}
+    </span>
+  {% endif -%}
+  </li>
+  {# Page numbers #}
+  {% for page_num in articles_paginator.page_range %}
+    {# Highlight the current page #}
+    {% if page_num == articles_page.number %}
+    <li class="active">
+    {% else %}
+    <li>
+    {% endif %}
+      <a href="{{ SITEURL }}/{{ articles_paginator.page(page_num).url }}">{{ page_num }}</a>
+    </li>
+  {% endfor %}
+  {# forward arrow #}
+  {%- if articles_page.has_next() %}
+    <li><a href="{{ SITEURL }}/{{ macros.next_url(articles_page) }}">
+  {%- else %}
+    <li class="disabled"><span>
+  {%- endif -%}
+  &raquo
+  {%- if articles_page.has_next() -%}
+    </a>
+  {%- else -%}
+    </span>
+  {%- endif -%}
+  </li>
+</ul>
