@@ -29,6 +29,10 @@ header a:focus {
   text-decoration: none;
 }
 
+h2 small time {
+  white-space: nowrap;
+}
+
 /* Code markup */
 div.highlight pre {
   /* Undo Bootstrap's <pre> screwiness */
