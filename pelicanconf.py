@@ -62,3 +62,9 @@ MONTH_ARCHIVE_SAVE_AS = 'blog/{date:%Y}/{date:%m}/index.html'
 
 # Uncomment following line if you want document-relative URLs when developing
 #RELATIVE_URLS = True
+
+# Theme config
+THEME = 'disaster-theme'
+EMAIL = 'paxswill@paxswill.com'
+GITHUB_ID = 'paxswill'
+STACKOVERFLOW_ID = 96454
