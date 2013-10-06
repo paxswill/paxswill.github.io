@@ -40,6 +40,8 @@ TYPOGRIFY = True
 # Set URLs and paths
 ARTICLE_URL = 'blog/{date:%Y}/{date:%m}/{date:%d}/{slug}/'
 ARTICLE_SAVE_AS = ARTICLE_URL + 'index.html'
+# Only process indicies and archives right now
+DIRECT_TEMPLATES = ( 'index', 'archives' )
 
 # Show Archives for years and months
 YEAR_ARCHIVE_SAVE_AS = 'blog/{date:%Y}/index.html'
