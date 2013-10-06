@@ -1,6 +1,6 @@
 Title: NSString Cons
 Date: 2011-08-14 06:54
-Category: code
+Tags: code
 
 One of the fundamental operators in functional languages is 'cons'. It
 concatenates lists of things together, and since strings are usually treated as

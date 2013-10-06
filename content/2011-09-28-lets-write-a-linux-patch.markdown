@@ -1,6 +1,6 @@
 Title: Let's Write a Linux Patch
 Date: 2011-09-30 00:00
-Category: code
+Tags: code
 Status: draft
 
 Due to an unfortunate accident involving a glass of water and my main

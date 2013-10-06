@@ -1,5 +1,6 @@
 Title: cWavelet
 Date: 2011-03-28 00:00
+Tags: code
 
 Weekend project I made: [cWavelet](https://github.com/paxswill/cwavelet).
 

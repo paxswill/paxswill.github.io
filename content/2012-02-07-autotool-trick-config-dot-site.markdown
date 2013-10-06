@@ -1,6 +1,6 @@
 Title: Autotools Trick: config.site
 Date: 2012-02-07 16:01
-Category: autoconf
+tags: autoconf, code
 
 This is a quick trick for those who have to continually set up common settings
 when using Autotools style `configure` scripts. One of the initial steps a

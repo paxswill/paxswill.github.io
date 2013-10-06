@@ -1,5 +1,6 @@
 Title: Ubuntu 10.04 on a Dell Mini 9
 Date: 2010-05-01 00:00
+tags: linux, code
 
 The Mac OS X install on my Mini 9 was recently borked (friend was borrowing it,
 and an unclean shutdown corrupted the file system), and I didn't have the
