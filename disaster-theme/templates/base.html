@@ -71,10 +71,13 @@
       <div class="container">
         <div class="row">
           <div class="col-md-offset-3 col-md-3">
+            {% if LINKS %}
             <ul>
-              <li>About</li>
-              <li><a href="{{ SITEURL }}/archives.html">Archives</a></li>
+              {% for link in LINKS %}
+                <li><a href="{{ link[1] }}">{{ link[0] }}</a></li>
+              {% endfor %}
             </ul>
+            {% endif %}
           </div>
           <div class="col-md-3">
             <p>&copy; {{ AUTHOR }} blahblah</p>
