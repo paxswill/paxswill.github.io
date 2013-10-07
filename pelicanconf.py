@@ -25,7 +25,7 @@ LINKS = (('Tutorials', SITEURL + '/tutorials'),
 SOCIAL = (('You can add links in your config file', '#'),
           ('Another social link', '#'),)
 
-DEFAULT_PAGINATION = 5
+DEFAULT_PAGINATION = 3
 
 # Extract the date slug from the file name
 FILENAME_METADATA = r'(?P<date>\d{4}-\d{2}-\d{2})-(?P<slug>.*)'
