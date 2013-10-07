@@ -45,6 +45,11 @@ PAGE_EXCLUDES = ('blog', )
 PAGE_URL = '{slug}/'
 PAGE_SAVE_AS = PAGE_URL + 'index.html'
 
+# Static resources
+STATIC_PATHS = [
+        'CNAME',
+    ]
+
 # Disable tag, category and author pages
 CATEGORY_SAVE_AS = False
 TAG_SAVE_AS = False
