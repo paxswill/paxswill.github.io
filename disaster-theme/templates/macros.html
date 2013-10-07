@@ -47,3 +47,8 @@
   {{ page.paginator.page(page.next_page_number()).url }}
 {%- endif %}
 {% endmacro %}
+
+{% macro copyright_years(content) %}
+{% set years = content|map(attribute='date')|map(attribute='year')|sort %}
+{{ years|first }}&ndash;{{ years|last }}
+{% endmacro %}
