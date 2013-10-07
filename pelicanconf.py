@@ -18,7 +18,7 @@ TRANSLATION_FEED_ATOM = None
 
 # Blogroll
 LINKS = (('Tutorials', SITEURL + '/tutorials'),
-         ('Archives', SITEURL + 'archives'),
+         ('Archives', SITEURL + '/archives'),
         )
 
 # Social widget
