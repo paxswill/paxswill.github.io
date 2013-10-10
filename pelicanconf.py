@@ -72,3 +72,11 @@ THEME = 'disaster-theme'
 EMAIL = 'paxswill@paxswill.com'
 GITHUB_ID = 'paxswill'
 STACKOVERFLOW_ID = 96454
+
+# Social stuff
+SOCIAL = (
+        ('email', 'paxswill@paxswill.com'),
+        ('github', 'paxswill'),
+        ('stackoverflow', 96454),
+        ('atom', True),
+    )
