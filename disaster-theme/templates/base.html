@@ -25,37 +25,51 @@
         <header class="col-sm-offset-2 col-sm-8 col-md-offset-1 col-md-2">
           {% block sidebar %}
           <h1><a href="{{ SITEURL }}/">{{ SITENAME }}</a><br class="visible-md visible-lg">
-            <small>
+            {% if SOCIAL is defined %}
+              <small>
               {% block social_buttons %}
-              {% if EMAIL %}
-              <a href="mailto:{{ EMAIL }}"><i class="icon-envelope"></i></a>
-              {% endif %}
-              {% if GITHUB_ID %}
-              <a href="https://github.com/{{ GITHUB_ID }}"><i class="icon-github-sign"></i></a>
-              {% endif %}
-              {% if BITBUCKET_ID %}
-              <a href="https://bitbucket.org/{{ BITBUCKET_ID }}"><i class="icon-bitbucket-sign"></i></a>
-              {% endif %}
-              {% if STACKOVERFLOW_ID %}
-              <a href="http://stackoverflow.com/users/{{ STACKOVERFLOW_ID }}"><i class="icon-stackexchange"></i></a>
-              {% endif %}
-              {% if DRIBBBLE_ID %}
-              <a href="http://dribbble.com/{{ DRIBBBLE_ID }}"><i class="icon-dribbble"></i></a>
-              {% endif %}
-              {% if FLICKR_ID %}
-              <a href="http://www.flickr.com/photos/{{ FLICKR_ID }}"><i class="icon-flickr"></i></a>
-              {% endif %}
-              {% if LINKEDIN_ID %}
-              <a href="http://www.linkedin.com/in/{{ LINKEDIN_ID }}"><i class="icon-linkedin-sign"></i></a>
-              {% endif %}
-              {% if TWITTER_ID %}
-              <a href="https://twitter.com/{{ TWITTER_ID }}"><i class="icon-twitter-sign"></i></a>
-              {% endif %}
-              {% if FACEBOOK_ID %}
-              <a href="https://facebook.com/{{ FACEBOOK_ID }}"><i class="icon-facebook-sign"></i></a>
-              {% endif %}
+              {% for social_tuple in SOCIAL %}
+                {% if social_tuple[0]|lower == 'email' %}
+                  <a href="mailto:{{ social_tuple[1] }}">
+                    <i class="icon-envelope"></i>
+                  </a>
+                {% elif social_tuple[0]|lower == 'github' %}
+                  <a href="https://github.com/{{ social_tuple[1] }}">
+                    <i class="icon-github-sign"></i>
+                  </a>
+                {% elif social_tuple[0]|lower == 'bitbucket' %}
+                  <a href="https://bitbucket.org/{{ social_tuple[1] }}">
+                    <i class="icon-bitbucket-sign"></i>
+                  </a>
+                {% elif social_tuple[0]|lower == 'stackoverflow' %}
+                  <a href="http://stackoverflow.com/users/{{ social_tuple[1] }}">
+                    <i class="icon-stackexchange"></i>
+                  </a>
+                {% elif social_tuple[0]|lower == 'dribble' %}
+                  <a href="http://dribbble.com/{{ social_tuple[1] }}">
+                    <i class="icon-dribbble"></i>
+                  </a>
+                {% elif social_tuple[0]|lower ==  'flickr' %}
+                  <a href="http://www.flickr.com/photos/{{ social_tuple[1] }}">
+                    <i class="icon-flickr"></i>
+                  </a>
+                {% elif social_tuple[0]|lower == 'linkedin' %}
+                  <a href="http://www.linkedin.com/in/{{ social_tuple[1] }}">
+                    <i class="icon-linkedin-sign"></i>
+                  </a>
+                {% elif social_tuple[0]|lower == 'twitter' %}
+                  <a href="https://twitter.com/{{ social_tuple[1] }}">
+                    <i class="icon-twitter-sign"></i>
+                  </a>
+                {% elif social_tuple[0]|lower == 'facebook' %}
+                  <a href="https://facebook.com/{{ social_tuple[1] }}">
+                    <i class="icon-facebook-sign"></i>
+                  </a>
+                {% endif %}
+              {% endfor %}
               {% endblock social_buttons %}
             </small>
+            {% endif %}
           </h1>
           {% endblock sidebar %}
         </header>

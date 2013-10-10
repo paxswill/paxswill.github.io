@@ -69,9 +69,6 @@ MONTH_ARCHIVE_SAVE_AS = 'blog/{date:%Y}/{date:%m}/index.html'
 
 # Theme config
 THEME = 'disaster-theme'
-EMAIL = 'paxswill@paxswill.com'
-GITHUB_ID = 'paxswill'
-STACKOVERFLOW_ID = 96454
 
 # Social stuff
 SOCIAL = (
