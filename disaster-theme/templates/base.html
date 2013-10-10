@@ -6,10 +6,10 @@
     <title>{% block title %}{{ macros.title() }}{% endblock title %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% if FEED_ALL_ATOM %}
-    <link rel="alternate" type="application/atom+xml" title="{{ SITENAME }}" href="{{ SITEURL }}/{{ FEED_DOMAIN}}/{{FEED_ALL_ATOM }}">
+    <link rel="alternate" type="application/atom+xml" title="{{ SITENAME }}" href="{{ FEED_DOMAIN}}/{{FEED_ALL_ATOM }}">
     {% endif %}
     {% if FEED_ALL_RSS %}
-    <link rel="alternate" type="application/rss+xml" title="{{ SITENAME }}" href="{{ SITEURL }}/{{ FEED_DOMAIN}}/{{FEED_ALL_RSS }}">
+    <link rel="alternate" type="application/rss+xml" title="{{ SITENAME }}" href="{{ FEED_DOMAIN}}/{{FEED_ALL_RSS }}">
     {% endif %}
     <!-- Stylesheets -->
     <link rel="stylesheet" media="screen" href="{{ SITEURL }}/{{ THEME_STATIC_DIR if THEME_STATIC_DIR else '/theme' }}/css/bootstrap.css">
