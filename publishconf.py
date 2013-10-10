@@ -13,8 +13,13 @@ from pelicanconf import *
 SITEURL = 'http://paxswill.com'
 RELATIVE_URLS = False
 
-FEED_ALL_ATOM = 'feeds/all.atom.xml'
-CATEGORY_FEED_ATOM = 'feeds/%s.atom.xml'
+# Atom/RSS feeds
+FEED_DOMAIN = SITEURL
+FEED_ALL_ATOM = 'atom.xml'
+FEED_ALL_RSS = 'rss.xml'
+CATEGORY_FEED_ATOM = None
+CATEGORY_FEED_RSS = None
+FEED_MAX_ITEMS = 15
 
 DELETE_OUTPUT_DIRECTORY = True
 
