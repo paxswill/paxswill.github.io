@@ -6,10 +6,10 @@
     <title>{% block title %}{{ macros.title() }}{% endblock title %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% if FEED_ALL_ATOM %}
-    <link rel="alternate" type="application/atom+xml" title="{{ SITENAME }}" href="{{ FEED_DOMAIN}}/{{FEED_ALL_ATOM }}">
+    <link rel="alternate" type="application/atom+xml" title="{{ SITENAME }}" href="{{ FEED_DOMAIN }}/{{ FEED_ALL_ATOM }}">
     {% endif %}
     {% if FEED_ALL_RSS %}
-    <link rel="alternate" type="application/rss+xml" title="{{ SITENAME }}" href="{{ FEED_DOMAIN}}/{{FEED_ALL_RSS }}">
+    <link rel="alternate" type="application/rss+xml" title="{{ SITENAME }}" href="{{ FEED_DOMAIN }}/{{ FEED_ALL_RSS }}">
     {% endif %}
     <!-- Stylesheets -->
     <link rel="stylesheet" media="screen" href="{{ SITEURL }}/{{ THEME_STATIC_DIR if THEME_STATIC_DIR else '/theme' }}/css/bootstrap.css">
@@ -65,6 +65,38 @@
                   <a href="https://facebook.com/{{ social_tuple[1] }}">
                     <i class="icon-facebook-sign"></i>
                   </a>
+                {% elif social_tuple[0]|lower == 'atom' %}
+                  {% if social_tuple[1] == True %}
+                    {% if FEED_ALL_ATOM is defined %}
+                      <a href="{{ FEED_DOMAIN }}/{{ FEED_ALL_ATOM }}">
+                        <i class="icon-rss-sign"></i>
+                      </a>
+                    {% elif FEED_ATOM is defined %}
+                      <a href="{{ FEED_DOMAIN }}/{{ FEED_ATOM }}">
+                        <i class="icon-rss-sign"></i>
+                      </a>
+                    {% else %}
+                      <a href="{{ social_tuple[1] }}">
+                        <i class="icon-rss-sign"></i>
+                      </a>
+                    {% endif %}
+                  {% endif %}
+                 {% elif social_tuple[0]|lower == 'rss' %}
+                  {% if social_tuple[1] == True %}
+                    {% if FEED_ALL_RSS is defined %}
+                      <a href="{{ FEED_DOMAIN }}/{{ FEED_ALL_RSS }}">
+                        <i class="icon-rss-sign"></i>
+                      </a>
+                    {% elif FEED_RSS is defined %}
+                      <a href="{{ FEED_DOMAIN }}/{{ FEED_RSS }}">
+                        <i class="icon-rss-sign"></i>
+                      </a>
+                    {% else %}
+                      <a href="{{ social_tuple[1] }}">
+                        <i class="icon-rss-sign"></i>
+                      </a>
+                    {% endif %}
+                  {% endif %}
                 {% endif %}
               {% endfor %}
               {% endblock social_buttons %}
