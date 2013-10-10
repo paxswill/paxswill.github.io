@@ -74,6 +74,5 @@ THEME = 'disaster-theme'
 SOCIAL = (
         ('email', 'paxswill@paxswill.com'),
         ('github', 'paxswill'),
-        ('stackoverflow', 96454),
         ('atom', True),
     )
