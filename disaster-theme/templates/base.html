@@ -1,9 +1,16 @@
 {% import "macros.html" as macros %}
+{% macro title(page_title=None) %}
+{% if page_title %}
+{{ page_title }} | {{ SITENAME }}
+{%- else -%}
+{{ SITENAME }}
+{%- endif %}
+{% endmacro %}
 <!DOCTYPE html>
 <html>
   <head>
     {% block head %}
-    <title>{% block title %}{{ macros.title() }}{% endblock title %}</title>
+    <title>{% block title %}{{ title() }}{% endblock title %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% if FEED_ALL_ATOM %}
     <link rel="alternate" type="application/atom+xml" title="{{ SITENAME }}" href="{{ FEED_DOMAIN }}/{{ FEED_ALL_ATOM }}">

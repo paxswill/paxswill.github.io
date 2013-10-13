@@ -1,11 +1,3 @@
-{% macro title(page_title=None) %}
-{% if page_title %}
-{{ page_title }} | {{ SITENAME }}
-{% else %}
-{{ SITENAME }}
-{% endif %}
-{% endmacro %}
-
 {% macro article_timestamp(article) %}
 <time datetime="{{ article.date|strftime('%Y-%m-%d %H:%M') }}" pubdate>
   {{ article.locale_date }}

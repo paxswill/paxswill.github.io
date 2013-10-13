@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% import "macros.html" as macros %}
 
-{% block title %}{{ macros.title(page.title) }}{% endblock title%}
+{% block title %}{{ title(page.title) }}{% endblock title%}
 
 {% block content %}
 {{ macros.article_format(page) }}
