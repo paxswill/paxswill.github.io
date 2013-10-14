@@ -1,8 +1,0 @@
-{% extends "base.html" %}
-{% import "macros.html" as macros %}
-
-{% block title %}{{ title(article.title) }}{% endblock title%}
-
-{% block content %}
-{{ macros.article_format(article) }}
-{% endblock content %}
