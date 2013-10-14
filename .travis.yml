@@ -1,0 +1,12 @@
+language: python
+python:
+    - "2.7"
+
+before_script:
+    - "git checkout source"
+    - "git submodule update --init --recursive"
+
+install: "pip install -r requirements.txt --use-mirrors"
+
+script:
+    - "make publish"
