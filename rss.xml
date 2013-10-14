@@ -1,5 +1,327 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Disaster Area</title><link>http://paxswill.com/</link><description></description><atom:link href="http://paxswill.com/rss.xml" rel="self"></atom:link><lastBuildDate>Tue, 07 Feb 2012 16:01:00 -0500</lastBuildDate><item><title>Autotools Trick: config.site</title><link>http://paxswill.com/blog/2012/02/07/autotool-trick-config-dot-site/</link><description>&lt;p&gt;This is a quick trick for those who have to continually set up common settings
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Disaster Area</title><link>http://paxswill.com/</link><description></description><atom:link href="http://paxswill.com/rss.xml" rel="self"></atom:link><lastBuildDate>Thu, 28 Feb 2013 00:00:00 -0500</lastBuildDate><item><title>Letter Frequencies in Names of Virginia Cities</title><link>http://paxswill.com/blog/2013/02/28/virginia-cities/</link><description>
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Recently I&amp;#8217;ve noticed on Facebook a couple of trivia posts asking you to try to name a city in Virgina with a certain letter in it. As background, thses posts are coming from my friends living in Virginia. You also have to be at least somewhat familiar with &lt;a href="https://en.wikipedia.org/wiki/Political_subdivisions_of_Virginia"&gt;Virginian municipal structure&lt;/a&gt;. Like other states, Virginia is divided up into counties. In most other states, the next step down is cities and/or towns. In Virginia, cities are independant and on the same level as counties. So the bar for being a city is pretty high, and many people can name a decent number of them if they put their mind to it. I wanted to find out if there were any letters not used in any cities. And because (like many programmers) I&amp;#8217;m lazy and didn&amp;#8217;t want to look through all of the cities manually I turned to Python to help&amp;nbsp;me.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Start with some basic setup. &lt;code&gt;Counter&lt;/code&gt; is a counted set. &lt;code&gt;pprint&lt;/code&gt; provides a nicer way to print lists and other containers by adding line breaks and such. &lt;a href="http://www.crummy.com/software/BeautifulSoup/"&gt;BeautifulSoup&lt;/a&gt; is a really easy to use &lt;span class="caps"&gt;HTML&lt;/span&gt; parser+navigator. &lt;a href="http://docs.python-requests.org/en/latest/"&gt;Requests&lt;/a&gt; makes it easy to download things from the&amp;nbsp;web.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell vbox"&gt;
+&lt;div class="input hbox"&gt;
+
+
+&lt;div class="input_area box-flex1"&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;collections&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Counter&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;string&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;pprint&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;PrettyPrinter&lt;/span&gt;
+
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;bs4&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;BeautifulSoup&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;requests&lt;/span&gt;
+
+&lt;span class="c"&gt;# A prettier way to print&lt;/span&gt;
+&lt;span class="n"&gt;pprint&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;PrettyPrinter&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pprint&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Wikipedia provides a nice &lt;a href="http://en.wikipedia.org/wiki/Cities_in_virginia"&gt;list&lt;/a&gt; of the cities in Virginia. I find all the tables (&lt;code&gt;&amp;lt;table&amp;gt;&lt;/code&gt; elements) on the page, and the second one is the one I want. I then get a list of the text of all links (&lt;code&gt;&amp;lt;a&amp;gt;&lt;/code&gt; elements) in that&amp;nbsp;table.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell vbox"&gt;
+&lt;div class="input hbox"&gt;
+
+
+&lt;div class="input_area box-flex1"&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;city_response&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;http://en.wikipedia.org/wiki/Cities_in_virginia&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;city_soup&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;BeautifulSoup&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;city_response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;content&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;tables&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;city_soup&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find_all&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;table&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="c"&gt;# Python starts counting at 0 like many other programming languages&lt;/span&gt;
+&lt;span class="n"&gt;table&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;tables&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="c"&gt;# There are some blank links, so drop those&lt;/span&gt;
+&lt;span class="n"&gt;cities&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;link&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;string&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;link&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;table&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find_all&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;a&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;link&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;string&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Now run through the list of cities, and add each one to a &lt;code&gt;Counter&lt;/code&gt;. Then I print out how many cities there are and a list of the letters used, sorted by how often they were&amp;nbsp;used.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell vbox"&gt;
+&lt;div class="input hbox"&gt;
+
+
+&lt;div class="input_area box-flex1"&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;city_count&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Counter&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;city&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;cities&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="c"&gt;# Add each letter of the lowercase city name to the Counter&lt;/span&gt;
+    &lt;span class="n"&gt;city_count&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;update&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;city&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;lower&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+
+&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;{} cities&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;cities&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
+&lt;span class="n"&gt;pprint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;city_count&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;most_common&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="vbox output_wrapper"&gt;
+&lt;div class="output vbox"&gt;
+
+
+&lt;div class="hbox output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="box-flex1 output_subarea output_stream output_stdout"&gt;
+&lt;pre&gt;
+39 cities
+[(&amp;apos;a&amp;apos;, 35),
+ (&amp;apos;r&amp;apos;, 31),
+ (&amp;apos;o&amp;apos;, 30),
+ (&amp;apos;n&amp;apos;, 29),
+ (&amp;apos;e&amp;apos;, 27),
+ (&amp;apos;s&amp;apos;, 25),
+ (&amp;apos;l&amp;apos;, 24),
+ (&amp;apos;i&amp;apos;, 23),
+ (&amp;apos;t&amp;apos;, 17),
+ (&amp;apos;h&amp;apos;, 14),
+ (&amp;apos;u&amp;apos;, 11),
+ (&amp;apos;c&amp;apos;, 11),
+ (&amp;apos;b&amp;apos;, 10),
+ (&amp;apos;f&amp;apos;, 10),
+ (&amp;apos;g&amp;apos;, 10),
+ (&amp;apos;p&amp;apos;, 9),
+ (&amp;apos;m&amp;apos;, 9),
+ (&amp;apos;d&amp;apos;, 8),
+ (&amp;apos;k&amp;apos;, 7),
+ (&amp;apos;v&amp;apos;, 6),
+ (&amp;apos;w&amp;apos;, 6),
+ (&amp;apos; &amp;apos;, 6),
+ (&amp;apos;x&amp;apos;, 4),
+ (&amp;apos;y&amp;apos;, 2),
+ (&amp;apos;q&amp;apos;, 1)]
+
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;I guess space (&amp;#8216; &amp;#8216;) counts as a letter, for those cities that are two words. Now I want to see which letters aren&amp;#8217;t used . To do this I make a set of the letters that were found and subtract it from a set of all lowercase&amp;nbsp;characters.&lt;/p&gt;
+&lt;p&gt;Sidenote: Confused from earlier where I said that &lt;code&gt;Counter&lt;/code&gt; was a counted set? Well, it is but it isn&amp;#8217;t a &lt;em&gt;set&lt;/em&gt; so the set operators won&amp;#8217;t work on&amp;nbsp;it.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell vbox"&gt;
+&lt;div class="input hbox"&gt;
+
+
+&lt;div class="input_area box-flex1"&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;not_in_cities&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;set&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;string&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ascii_lowercase&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="nb"&gt;set&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;city_count&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;pprint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;not_in_cities&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="vbox output_wrapper"&gt;
+&lt;div class="output vbox"&gt;
+
+
+&lt;div class="hbox output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="box-flex1 output_subarea output_stream output_stdout"&gt;
+&lt;pre&gt;
+{&amp;apos;z&amp;apos;, &amp;apos;j&amp;apos;}
+
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Bet you can&amp;#8217;t name a city that contains the letter&amp;nbsp;&amp;#8216;J&amp;#8217;!&lt;/p&gt;
+&lt;p&gt;And because they&amp;#8217;re pretty big, let&amp;#8217;s look at incorporated towns. Again, Wikipedia has a &lt;a href="http://en.wikipedia.org/wiki/List_of_towns_in_Virginia"&gt;list&lt;/a&gt; of them that I&amp;#8217;ll use. This list isn&amp;#8217;t in a table, so it&amp;#8217;s a bit harder to pull&amp;nbsp;out.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell vbox"&gt;
+&lt;div class="input hbox"&gt;
+
+
+&lt;div class="input_area box-flex1"&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;town_response&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;http://en.wikipedia.org/wiki/List_of_towns_in_Virginia&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;town_soup&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;BeautifulSoup&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;town_response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;content&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;First I grab the main content area. Wikipedia displays the actual town names as elements (&lt;code&gt;&amp;lt;li&amp;gt;&lt;/code&gt; elements) within unordered lists (&lt;code&gt;&amp;lt;ul&amp;gt;&lt;/code&gt; elements), one for each letter in the alphabet. Because there are some other unordered lists in the content, I find all unordered lists that are only one level down (this is starting to get into the specifics of &lt;span class="caps"&gt;HTML&lt;/span&gt;, but it&amp;#8217;ll be over soon). Then I go through each list, and save the link text for the first link I find in each list item. After than, the process is the same as the&amp;nbsp;cities.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell vbox"&gt;
+&lt;div class="input hbox"&gt;
+
+
+&lt;div class="input_area box-flex1"&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;town_content&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;town_soup&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;div&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;mw-content-text&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;lists&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;element&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;element&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;town_content&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find_all&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;ul&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;element&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;parent&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;town_content&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;towns&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;ul&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;lists&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;element&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;ul&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find_all&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;li&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;town_link&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;element&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;
+        &lt;span class="c"&gt;# The references list has rel=&amp;quot;nofollow&amp;quot;, and we don&amp;#39;t want the references&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;rel&amp;#39;&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;town_link&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;towns&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;town_link&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;string&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;town&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;towns&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;town_count&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;update&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;town&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;lower&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+
+&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;{} towns&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;towns&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;
+&lt;span class="n"&gt;pprint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;town_count&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;most_common&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="vbox output_wrapper"&gt;
+&lt;div class="output vbox"&gt;
+
+
+&lt;div class="hbox output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="box-flex1 output_subarea output_stream output_stdout"&gt;
+&lt;pre&gt;
+190 towns
+[(&amp;apos;e&amp;apos;, 310),
+ (&amp;apos;a&amp;apos;, 278),
+ (&amp;apos;l&amp;apos;, 272),
+ (&amp;apos;n&amp;apos;, 258),
+ (&amp;apos;o&amp;apos;, 248),
+ (&amp;apos;r&amp;apos;, 232),
+ (&amp;apos;i&amp;apos;, 216),
+ (&amp;apos;t&amp;apos;, 200),
+ (&amp;apos;s&amp;apos;, 174),
+ (&amp;apos;c&amp;apos;, 154),
+ (&amp;apos;h&amp;apos;, 102),
+ (&amp;apos;d&amp;apos;, 100),
+ (&amp;apos;u&amp;apos;, 94),
+ (&amp;apos;b&amp;apos;, 88),
+ (&amp;apos; &amp;apos;, 82),
+ (&amp;apos;g&amp;apos;, 82),
+ (&amp;apos;m&amp;apos;, 70),
+ (&amp;apos;p&amp;apos;, 66),
+ (&amp;apos;w&amp;apos;, 66),
+ (&amp;apos;v&amp;apos;, 64),
+ (&amp;apos;y&amp;apos;, 64),
+ (&amp;apos;k&amp;apos;, 60),
+ (&amp;apos;f&amp;apos;, 38),
+ (&amp;apos;x&amp;apos;, 16),
+ (&amp;apos;j&amp;apos;, 6),
+ (&amp;apos;.&amp;apos;, 4),
+ (&amp;apos;q&amp;apos;, 4),
+ (&amp;apos;z&amp;apos;, 2)]
+
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell vbox"&gt;
+&lt;div class="input hbox"&gt;
+
+
+&lt;div class="input_area box-flex1"&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;not_in_towns&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;set&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;string&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ascii_lowercase&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="nb"&gt;set&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;town_count&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;pprint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;not_in_towns&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="vbox output_wrapper"&gt;
+&lt;div class="output vbox"&gt;
+
+
+&lt;div class="hbox output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="box-flex1 output_subarea output_stream output_stdout"&gt;
+&lt;pre&gt;
+set()
+
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;&lt;code&gt;set()&lt;/code&gt; means that every letter is used (the &amp;#8216;.&amp;#8217;s are from St. Charles and St. Paul). Now I want to see what the counts are for the cities and towns combined. I create a new &lt;code&gt;Counter&lt;/code&gt; from the cities` and then add the&amp;nbsp;towns&amp;#8217;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell vbox"&gt;
+&lt;div class="input hbox"&gt;
+
+
+&lt;div class="input_area box-flex1"&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;city_town_count&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Counter&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;city_count&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;city_town_count&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;update&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;town_count&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;pprint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;city_town_count&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;most_common&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="vbox output_wrapper"&gt;
+&lt;div class="output vbox"&gt;
+
+
+&lt;div class="hbox output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="box-flex1 output_subarea output_stream output_stdout"&gt;
+&lt;pre&gt;
+[(&amp;apos;e&amp;apos;, 337),
+ (&amp;apos;a&amp;apos;, 313),
+ (&amp;apos;l&amp;apos;, 296),
+ (&amp;apos;n&amp;apos;, 287),
+ (&amp;apos;o&amp;apos;, 278),
+ (&amp;apos;r&amp;apos;, 263),
+ (&amp;apos;i&amp;apos;, 239),
+ (&amp;apos;t&amp;apos;, 217),
+ (&amp;apos;s&amp;apos;, 199),
+ (&amp;apos;c&amp;apos;, 165),
+ (&amp;apos;h&amp;apos;, 116),
+ (&amp;apos;d&amp;apos;, 108),
+ (&amp;apos;u&amp;apos;, 105),
+ (&amp;apos;b&amp;apos;, 98),
+ (&amp;apos;g&amp;apos;, 92),
+ (&amp;apos; &amp;apos;, 88),
+ (&amp;apos;m&amp;apos;, 79),
+ (&amp;apos;p&amp;apos;, 75),
+ (&amp;apos;w&amp;apos;, 72),
+ (&amp;apos;v&amp;apos;, 70),
+ (&amp;apos;k&amp;apos;, 67),
+ (&amp;apos;y&amp;apos;, 66),
+ (&amp;apos;f&amp;apos;, 48),
+ (&amp;apos;x&amp;apos;, 20),
+ (&amp;apos;j&amp;apos;, 6),
+ (&amp;apos;q&amp;apos;, 5),
+ (&amp;apos;.&amp;apos;, 4),
+ (&amp;apos;z&amp;apos;, 2)]
+
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Will Ross</dc:creator><pubDate>Thu, 28 Feb 2013 00:00:00 -0500</pubDate><guid>tag:paxswill.com,2013-02-28:blog/2013/02/28/virginia-cities/</guid></item><item><title>Autotools Trick: config.site</title><link>http://paxswill.com/blog/2012/02/07/autotool-trick-config-dot-site/</link><description>&lt;p&gt;This is a quick trick for those who have to continually set up common settings
 when using Autotools style &lt;code&gt;configure&lt;/code&gt; scripts. One of the initial steps a
 configure script does is to look for a &lt;code&gt;$prefix/share/config.site&lt;/code&gt;
 file and then to execute its contents. An example of how this may be useful is
