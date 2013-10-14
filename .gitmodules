@@ -4,3 +4,9 @@
 [submodule "disaster-theme"]
 	path = disaster-theme
 	url = https://github.com/paxswill/disaster-theme
+[submodule "pelican-ipythonnb"]
+	path = pelican-ipythonnb
+	url = https://github.com/danielfrg/pelican-ipythonnb.git
+[submodule "plugins/pelican-ipythonnb"]
+	path = plugins/pelican-ipythonnb
+	url = https://github.com/danielfrg/pelican-ipythonnb.git

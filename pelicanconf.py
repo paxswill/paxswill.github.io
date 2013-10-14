@@ -31,10 +31,14 @@ DEFAULT_PAGINATION = 3
 FILENAME_METADATA = r'(?P<date>\d{4}-\d{2}-\d{2})-(?P<slug>.*)'
 
 # Use Markdown for content
-MARKUP = ('markdown', 'mdown', 'md')
+MARKUP = ('markdown', 'mdown', 'md', 'ipynb')
 
 # Use Typogrify
 TYPOGRIFY = True
+
+# Setup plugins
+PLUGIN_PATH = 'plugins'
+PLUGINS = ['pelican-ipythonnb',]
 
 # Set URLs and paths
 ARTICLE_DIR = 'blog'
