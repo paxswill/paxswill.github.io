@@ -13,6 +13,6 @@ pelican==3.3
 pytz==2013.7
 six==1.4.1
 smartypants==1.8.1
-solarized-pygment==0.1
+-e git+https://github.com/john2x/solarized-pygment.git#egg=solarized-pygment
 typogrify==2.0.0
 wsgiref==0.1.2
