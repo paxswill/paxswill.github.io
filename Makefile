@@ -89,9 +89,11 @@ travis: publish
 ifeq "$(TRAVIS_PULL_REQUEST)" "false"
 	git config --global user.email "travis@travis-ci.org"
 	git config --global user.name "Travis CI"
-	git remote set-url --push origin "https://$(GH_TOKEN)@github.com/paxswill/paxswill.github.io"
-	ghp-import -n -b master $(OUTPUTDIR)
-	git push origin master
+	@echo "Setting push URL"
+	@git remote set-url --push origin "https://$(GH_TOKEN)@github.com/paxswill/paxswill.github.io" >/dev/null
+	ghp-import -n -b master -m "Travis Build $(TRAVIS_JOB_ID)" $(OUTPUTDIR)
+	@echo "Pushing to master"
+	@git push origin master >/dev/null
 endif
 
 
