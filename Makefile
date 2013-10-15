@@ -86,7 +86,7 @@ github: publish
 	git push origin master
 
 travis: publish
-ifneq "$(TRAVIS_PULL_REQUEST)" "false"
+ifeq "$(TRAVIS_PULL_REQUEST)" "false"
 	git config --global user.email "travis@travis-ci.org"
 	git config --global user.name "Travis CI"
 	git remote set-url --push origin "https://$(GH_TOKEN)@github.com/paxswill/paxswill.github.io"
