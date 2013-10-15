@@ -52,6 +52,7 @@ PAGE_SAVE_AS = PAGE_URL + 'index.html'
 # Static resources
 STATIC_PATHS = [
         'CNAME',
+        '.travis.yml',
     ]
 
 # Disable tag, category and author pages
