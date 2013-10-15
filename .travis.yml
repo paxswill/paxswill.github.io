@@ -17,3 +17,10 @@ before_script:
 
 script:
     - "make publish"
+
+after_success:
+    - make travis
+
+env:
+    global:
+        secure: Egrt9UkxDfqUjI6vrK27E4i3I1v+r+X23f0VBhBbE9InmVW1OV3SgUqbyFT3oVCIRbA+cVh7D/CqNgs26ajWqpwJjwF74z3uAb0PYySwVKAhJiL4q921dADujADXjApHrtCWPJ/i0JF5aNpzkAtOzhQa2aSdvFrCV+rMSn9yyq8=

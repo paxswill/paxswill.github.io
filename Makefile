@@ -85,4 +85,14 @@ github: publish
 	ghp-import -n -b master $(OUTPUTDIR)
 	git push origin master
 
+travis: publish
+ifneq "$(TRAVIS_PULL_REQUEST)" "false"
+	git config --global user.email "travis@travis-ci.org"
+	git config --global user.name "Travis CI"
+	git remote set-url --push origin "https://$(GH_TOKEN)@github.com/paxswill/paxswill.github.io"
+	ghp-import -n -b master $(OUTPUTDIR)
+	git push origin master
+endif
+
+
 .PHONY: html help clean regenerate serve devserver publish ssh_upload rsync_upload dropbox_upload ftp_upload s3_upload github
