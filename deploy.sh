@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
 	# You better have done 'make deploy' first...
 	if [ "$TRAVIS" = "true" ]; then
 		export GIT_COMMITER_NAME="Travis CI"
