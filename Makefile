@@ -86,15 +86,6 @@ github: publish
 	git push origin master
 
 travis: publish
-ifeq "$(TRAVIS_PULL_REQUEST)" "false"
-	git config --global user.email "travis@travis-ci.org"
-	git config --global user.name "Travis CI"
-	@echo "Setting push URL"
-	@git remote set-url --push origin "https://$(GH_TOKEN)@github.com/paxswill/paxswill.github.io" >/dev/null
-	ghp-import -n -b master -m "Travis Build $(TRAVIS_JOB_ID)" $(OUTPUTDIR)
-	@echo "Pushing to master"
-	@git push origin master >/dev/null
-endif
-
+	./deploy.sh
 
 .PHONY: html help clean regenerate serve devserver publish ssh_upload rsync_upload dropbox_upload ftp_upload s3_upload github
