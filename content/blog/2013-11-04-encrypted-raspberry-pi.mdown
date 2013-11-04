@@ -1,0 +1,236 @@
+Title: Using an Encrypted Root Partition with Raspbian
+Tags: raspberrypi linux
+
+I recently had to figure out how to encrypt the root partition of a Raspberry
+Pi running Raspbian. I found some mentions of people doing it here and there,
+but no end-to-end walkthrough of how to do it. These instructions are for
+Raspbian 'wheezy' and assume a newly imaged SD card from the distributed
+Raspbian image. I also used another computer running Linux with an SD card
+reader to perform the actual initial encryption. There may be a way of doing
+this all form a single Pi, but I didn't look to closely into it.
+
+## Setup on the Pi
+
+First we make sure we're using the latest software and then reboot to make sure
+everything is there. After that you should expand the root partition by running
+`sudo raspi-config` and following the prompts.
+
+    :::shell
+    sudo apt-get update && sudo apt-get upgrade
+    sudo shutdown -r now
+
+Now we'll upgrade the firmware and kernel. Right now (early November 2013) we
+need to use the 'next' branch as that kernel has `CONFIG_BLK_DEV_INITRD`
+enabled. That option allows us to use an initial RAM filesystems (referred to
+as an initramfs afterwards). This can take a while, and *will* fill up your
+root partition if you haven't expanded it yet. Afterwards reboot to have the
+new firmware and kernel take effect.
+
+    :::shell
+    sudo BRANCH=next rpi-update
+    sudo shutdown -r now
+
+Now we install the necessary packages. Busybox is a collection of common shell
+utilities and a shell that uses a very small memory footprint and will be our
+shell in the initramfs. cryptsetup installs the necessary utilities to encrypt
+and unlock encrypted partitions.
+
+    :::shell
+    sudo apt-get install busybox cryptsetup
+
+Now we create the initramfs. On normal desktop distributions of Linux, this
+step is usually run automatically whenever the kernel is update, but we have to
+do it manually.
+
+    :::shell
+    sudo mkinitramfs -o /boot/initramfs.gz
+
+Now we need to modify /boot/config.txt to have the bootloader load our new
+initramfs into memory. Add these lines at the end of the file.
+
+    initramfs initramfs.gz followkernel
+
+## Encrypting the Root Partition.
+
+On another computer running Linux, mount the SD card. I'm using a Dell Mini 9,
+and coincidentally the SD card reader uses `/dev/mmcblk0` like the Pi does.
+Your device name may vary, checking dmesg with `dmesg | tail` may be useful to
+learn what name your system uses for SD cards. Now create an image of the root
+partition on the SD card (partition 2). Make sure the file system is alright,
+then shrink it down to its minimum size. We'll use this later to restore the
+existing system to the new, encrypted partition.
+
+    :::shell
+    dd if=/dev/mmcblk0p2 of=/tmp/raspbian-plain.img bs=4M
+    e2fsck -f /tmp/raspbian-plain.img
+    resize2fs -M /tmp/raspbian-plain.img
+
+If your non-Pi Linux computer doesn't already have them installed, install the
+cryptsetup command.
+
+    :::shell
+    sudo apt-get install cryptsetup
+
+Now we're going to create the encrypted partition. You should explicitly
+specify the key size and cipher as the default changed in version 1.6.0 os
+cryptsetup and Raspbian has an older version that doesn't support the new
+cipher. The luksOpen command creates `/dev/mapper/sdcard`, which is the
+decrypted interface to the encrypted partition.
+
+    :::shell
+    sudo cryptsetup -v -y --cipher aes-cbc-essiv:sha256 --key-size 256 luksFormat /dev/mmcblk0p2
+    sudo cryptsetup -v luksOpen /dev/mmcblk0p2 sdcard
+
+Now copy the original filesystem data back to the newly created encrypted
+partition. This can sometimes take a while; it took just under ten minutes to
+copy 3.5GB with my setup. After that we'll re-expand the filesystem to take up
+the whole partition.
+
+    :::shell
+    sudo dd if=/tmp/raspbian-plain.img of=/dev/mapper/sdcard bs=4M
+    sudo e2fsck /dev/mapper/sdcard
+    sudo resize2fs /dev/mapper/sdcard
+
+Now we need to configure the system on the SD card to use the new partition
+as its root. Change the `root=/dev/mmcblk0p2` part to
+`root=/dev/mapper/sdcard` and add `cryptdevice=/dev/mmcblk0p2:sdcard`. We also
+need to change /etc/fstab on to use the new encrypted partition. The commands
+below will show you how to make the boot and main partition available. In the
+fstab file, change `/dev/mmcblk0p2` to `/dev/mapper/sdcard`.
+
+The last steps are to tell the Pi how to boot the new partition. First mount
+the boot partition and the new partition somewhere so we can access them
+easily.
+
+    :::shell
+    mkdir /tmp/pi_root /tmp/pi_boot
+    sudo mount /dev/mmcblk0p1 /tmp/pi_boot
+    sudo mount /dev/mapper/sdcard /tmp/pi_root
+
+Now edit the cmdline.txt file on the Pi's boot partition
+(`/tmp/pi_boot/cmdline.txt` is you used the above commands) to tell the kernel
+what the new root partition is and how to access it. Change
+`root=/dev/mmcblk0p2` to `root=/dev/mapper/sdcard` and add
+`cryptdevice=/dev/mmcblk0p2:sdcard`. Here's what mine looks like after those
+changes. Yours might be a little different, but it should look similar.
+
+    dwc_otg.lpm_enable=0 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=tty1 root=/dev/mapper/sdcard cryptdevice=/dev/mmcblk0p2:sdcard rootfstype=ext4 elevator=deadline rootwait smsc95xx.turbo_mode=N
+
+Now we need to tell the rest of the system on the Pi about the new partition.
+Open up the fstab file on the Pi's root partition (`/tmp/pi_root/etc/fstab`)
+and change `/dev/mmcblk0p2` to `/dev/mapper/sdcard`. Now create a crypttab file
+(`/tmp/pi_root/etc/crypttab`) and add this line at the end. Note that those are
+tab characters seprarating each word, not spaces.
+
+    sdcard	/dev/mmcblk0p2	none	luks
+
+Now unmount everything and put the SD card back in your Pi.
+
+    :::shell
+    sudo umount /tmp/pi_boot /tmp/pi_root
+	sudo cryptsetup luksClose sdcard
+
+## First Boot
+
+**The first boot will fail.** Have a USB keyboard and a screen hooked up to
+your Pi so you can work with the Busybox recovery shell. All you have to do is
+mount the root partition and then exit the shell, and everything else will take
+care of itself. Run these commands when you get an `(initramfs)` prompt.
+
+    :::shell
+    cryptsetup luksOpen /dev/mmcblk0p2 sdcard
+    exit
+
+Once the Pi is booted up the rest of the way, you need to re-create the
+initramfs so you get a nicer unlock prompt on future start ups.
+
+    :::shell
+    sudo mkinitramfs -o /boot/initramfs.gz
+
+You can now reboot. Instead of errors about not being able to find or mount the
+root partition, you should get a nice prompt asking for your unlock password.
+Enter it and press return, and the rest of the boot process should follow.
+
+### Time Problem
+
+I found sometimes that mounting the decrypted root partition would fail because
+the last unmount time was far in the future. This is because the Pi can't save
+the time between reboots like most other computers. To work around this, you can
+use the `date` command to set the time in the initramfs, and then mount the system.
+`date` takes the current time in MMDDhhmmYYYY, so November 4, 2013 at 13:30
+would be 110413302013. To get to a shell to set the time, intentionally
+cause the unlock script to exit by entering an incorrect password three times.
+You'll then have to wait about 30 seconds for a timeout, and then you'll be at
+the `(initramfs)` prompt. Set the time to something reasonably close (as long
+as it's within a day, you're good) and then restart the unlocking script.
+
+    :::shell
+    date 110413302013
+    /scripts/local-top/cryptroot
+
+## Remote Unlocking
+
+Having to be physically at the Pi to unlock the disk can be a pain, but there
+is a way of unlocking it over SSH. The Dropbear SSH server is a very
+small and lightweight server that can be run from the initramfs. It will
+automatically add itself to the initramfs if it detects an encrypted partition
+on the system.
+
+    :::shell
+    sudo apt-get install dropbear
+
+There's a minor bug in the initramfs scripts shipping with Dropbear in
+Raspbian. On line 296 of
+`/usr/share/initramfs-tools/scripts/local-top/cryptroot`, add `/sbin/`
+just before `blkid`. It should look like this afterwards:
+
+    FSTYPE="$(/sbin/blkid -s TYPE -o value "$NEWROOT")"
+
+You have to re-create the initramfs again to trigger Dropbear to generate SSH
+keys.
+
+    :::shell
+    sudo mkinitramfs -o /boot/initramfs.gz
+
+Now copy over the SSH key Dropbear generates (this is from the Pi, to another
+computer).
+
+    :::shell
+    sudo scp /etc/initramfs-tools/root/.ssh/id_rsa username@othercomputer:~/.ssh/id_rsa_rpi_dropbear
+
+Finally, edit initramfs' authorized_keys file to have Dropbear show you the
+password prompt as soon as you connect.
+
+    :::shell
+    sudo nano /etc/initramfs-tools/root/.ssh/authorized_keys
+
+Add this chunk of text just before the `ssh-rsa` at the beginning of the file.
+This starts the unlock script, and once it has exited it stops the other
+instance of the unlock script so boot can continue.
+
+    command="/scripts/local-top/cryptroot && kill -9 `ps | grep -m 1 'cryptroot' | cut -d ' ' -f 3`"
+
+And finally, rebuild initramfs for the last time (until you upgrade your
+kernel).
+
+    :::shell
+    sudo mkinitramfs -o /boot/initramfs.gz
+
+To test it out, restart your Pi, and then try logging in from another computer
+(this step is from another computer that has network access to the Pi).
+
+    :::shell
+    ssh -i ~/.ssh/id_rsa_rpi_dropbear root@192.168.2.143
+
+You should be asked to enter a password, and once a correct one has been
+entered the Pi will boot the rest of the way.
+
+## Conclusions
+
+Write speed is greatly reduced, down to 4.2 MB/s from 12.9 MB/sec.
+Writing a continued chunk of data to the SD card also pegs the CPU at 100%.
+This results in a noticably slower startup and significant delays when
+something is being written to disk. This might improve if AES-XTS support is
+enabled in the Pi's kernel and cryptsetup is updated to use it, but I'm not
+confident the improvement will be that substantial.
+
