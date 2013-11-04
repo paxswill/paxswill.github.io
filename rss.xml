@@ -1,5 +1,227 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Disaster Area</title><link>http://paxswill.com/</link><description></description><atom:link href="http://paxswill.com/rss.xml" rel="self"></atom:link><lastBuildDate>Thu, 28 Feb 2013 00:00:00 -0500</lastBuildDate><item><title>Letter Frequencies in Names of Virginia Cities</title><link>http://paxswill.com/blog/2013/02/28/virginia-cities/</link><description>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Disaster Area</title><link>http://paxswill.com/</link><description></description><atom:link href="http://paxswill.com/rss.xml" rel="self"></atom:link><lastBuildDate>Mon, 04 Nov 2013 00:00:00 -0500</lastBuildDate><item><title>Using an Encrypted Root Partition with Raspbian</title><link>http://paxswill.com/blog/2013/11/04/encrypted-raspberry-pi/</link><description>&lt;p&gt;I recently had to figure out how to encrypt the root partition of a Raspberry
+Pi running Raspbian. I found some mentions of people doing it here and there,
+but no end-to-end walkthrough of how to do it. These instructions are for
+Raspbian &amp;#8216;wheezy&amp;#8217; and assume a newly imaged &lt;span class="caps"&gt;SD&lt;/span&gt; card from the distributed
+Raspbian image. I also used another computer running Linux with an &lt;span class="caps"&gt;SD&lt;/span&gt; card
+reader to perform the actual initial encryption. There may be a way of doing
+this all form a single Pi, but I didn&amp;#8217;t look to closely into&amp;nbsp;it.&lt;/p&gt;
+&lt;h2&gt;Setup on the&amp;nbsp;Pi&lt;/h2&gt;
+&lt;p&gt;First we make sure we&amp;#8217;re using the latest software and then reboot to make sure
+everything is there. After that you should expand the root partition by running
+&lt;code&gt;sudo raspi-config&lt;/code&gt; and following the&amp;nbsp;prompts.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;apt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt; &lt;span class="n"&gt;update&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;apt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt; &lt;span class="n"&gt;upgrade&lt;/span&gt;
+&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;shutdown&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt; &lt;span class="n"&gt;now&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now we&amp;#8217;ll upgrade the firmware and kernel. Right now (early November 2013) we
+need to use the &amp;#8216;next&amp;#8217; branch as that kernel has &lt;code&gt;CONFIG_BLK_DEV_INITRD&lt;/code&gt;
+enabled. That option allows us to use an initial &lt;span class="caps"&gt;RAM&lt;/span&gt; filesystems (referred to
+as an initramfs afterwards). This can take a while, and &lt;em&gt;will&lt;/em&gt; fill up your
+root partition if you haven&amp;#8217;t expanded it yet. Afterwards reboot to have the
+new firmware and kernel take&amp;nbsp;effect.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;&lt;span class="caps"&gt;BRANCH&lt;/span&gt;&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;next&lt;/span&gt; &lt;span class="n"&gt;rpi&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;update&lt;/span&gt;
+&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;shutdown&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt; &lt;span class="n"&gt;now&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now we install the necessary packages. Busybox is a collection of common shell
+utilities and a shell that uses a very small memory footprint and will be our
+shell in the initramfs. cryptsetup installs the necessary utilities to encrypt
+and unlock encrypted&amp;nbsp;partitions.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;apt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;busybox&lt;/span&gt; &lt;span class="n"&gt;cryptsetup&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now we create the initramfs. On normal desktop distributions of Linux, this
+step is usually run automatically whenever the kernel is update, but we have to
+do it&amp;nbsp;manually.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;mkinitramfs&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;o&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;boot&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;initramfs&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gz&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now we need to modify /boot/config.txt to have the bootloader load our new
+initramfs into memory. Add these lines at the end of the&amp;nbsp;file.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;initramfs&lt;/span&gt; &lt;span class="n"&gt;initramfs&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gz&lt;/span&gt; &lt;span class="n"&gt;followkernel&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Encrypting the Root&amp;nbsp;Partition.&lt;/h2&gt;
+&lt;p&gt;On another computer running Linux, mount the &lt;span class="caps"&gt;SD&lt;/span&gt; card. I&amp;#8217;m using a Dell Mini 9,
+and coincidentally the &lt;span class="caps"&gt;SD&lt;/span&gt; card reader uses &lt;code&gt;/dev/mmcblk0&lt;/code&gt; like the Pi does.
+Your device name may vary, checking dmesg with &lt;code&gt;dmesg | tail&lt;/code&gt; may be useful to
+learn what name your system uses for &lt;span class="caps"&gt;SD&lt;/span&gt; cards. Now create an image of the root
+partition on the &lt;span class="caps"&gt;SD&lt;/span&gt; card (partition 2). Make sure the file system is alright,
+then shrink it down to its minimum size. We&amp;#8217;ll use this later to restore the
+existing system to the new, encrypted&amp;nbsp;partition.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;dd&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="o"&gt;=/&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;mmcblk0p2&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt;&lt;span class="o"&gt;=/&lt;/span&gt;&lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;raspbian&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;plain&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;img&lt;/span&gt; &lt;span class="n"&gt;bs&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="n"&gt;M&lt;/span&gt;
+&lt;span class="n"&gt;e2fsck&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;raspbian&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;plain&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;img&lt;/span&gt;
+&lt;span class="n"&gt;resize2fs&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;M&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;raspbian&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;plain&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;img&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If your non-Pi Linux computer doesn&amp;#8217;t already have them installed, install the
+cryptsetup&amp;nbsp;command.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;apt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;cryptsetup&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now we&amp;#8217;re going to create the encrypted partition. You should explicitly
+specify the key size and cipher as the default changed in version 1.6.0 os
+cryptsetup and Raspbian has an older version that doesn&amp;#8217;t support the new
+cipher. The luksOpen command creates &lt;code&gt;/dev/mapper/sdcard&lt;/code&gt;, which is the
+decrypted interface to the encrypted&amp;nbsp;partition.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;cryptsetup&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;v&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;cipher&lt;/span&gt; &lt;span class="n"&gt;aes&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;cbc&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;essiv&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;sha256&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;size&lt;/span&gt; &lt;span class="mi"&gt;256&lt;/span&gt; &lt;span class="n"&gt;luksFormat&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;mmcblk0p2&lt;/span&gt;
+&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;cryptsetup&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;v&lt;/span&gt; &lt;span class="n"&gt;luksOpen&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;mmcblk0p2&lt;/span&gt; &lt;span class="n"&gt;sdcard&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now copy the original filesystem data back to the newly created encrypted
+partition. This can sometimes take a while; it took just under ten minutes to
+copy 3.&lt;span class="caps"&gt;5GB&lt;/span&gt; with my setup. After that we&amp;#8217;ll re-expand the filesystem to take up
+the whole&amp;nbsp;partition.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;dd&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="o"&gt;=/&lt;/span&gt;&lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;raspbian&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;plain&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;img&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt;&lt;span class="o"&gt;=/&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;mapper&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;sdcard&lt;/span&gt; &lt;span class="n"&gt;bs&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="n"&gt;M&lt;/span&gt;
+&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;e2fsck&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;mapper&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;sdcard&lt;/span&gt;
+&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;resize2fs&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;mapper&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;sdcard&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now we need to configure the system on the &lt;span class="caps"&gt;SD&lt;/span&gt; card to use the new partition
+as its root. Change the &lt;code&gt;root=/dev/mmcblk0p2&lt;/code&gt; part to
+&lt;code&gt;root=/dev/mapper/sdcard&lt;/code&gt; and add &lt;code&gt;cryptdevice=/dev/mmcblk0p2:sdcard&lt;/code&gt;. We also
+need to change /etc/fstab on to use the new encrypted partition. The commands
+below will show you how to make the boot and main partition available. In the
+fstab file, change &lt;code&gt;/dev/mmcblk0p2&lt;/code&gt; to &lt;code&gt;/dev/mapper/sdcard&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The last steps are to tell the Pi how to boot the new partition. First mount
+the boot partition and the new partition somewhere so we can access them&amp;nbsp;easily.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;mkdir&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;pi_root&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;pi_boot&lt;/span&gt;
+&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;mount&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;mmcblk0p1&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;pi_boot&lt;/span&gt;
+&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;mount&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;mapper&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;sdcard&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;pi_root&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now edit the cmdline.txt file on the Pi&amp;#8217;s boot partition
+(&lt;code&gt;/tmp/pi_boot/cmdline.txt&lt;/code&gt; is you used the above commands) to tell the kernel
+what the new root partition is and how to access it. Change
+&lt;code&gt;root=/dev/mmcblk0p2&lt;/code&gt; to &lt;code&gt;root=/dev/mapper/sdcard&lt;/code&gt; and add
+&lt;code&gt;cryptdevice=/dev/mmcblk0p2:sdcard&lt;/code&gt;. Here&amp;#8217;s what mine looks like after those
+changes. Yours might be a little different, but it should look&amp;nbsp;similar.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;dwc_otg&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;lpm_enable&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt; &lt;span class="n"&gt;console&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;ttyAMA0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;115200&lt;/span&gt; &lt;span class="n"&gt;kgdboc&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;ttyAMA0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;115200&lt;/span&gt; &lt;span class="n"&gt;console&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;tty1&lt;/span&gt; &lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="o"&gt;=/&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;mapper&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;sdcard&lt;/span&gt; &lt;span class="n"&gt;cryptdevice&lt;/span&gt;&lt;span class="o"&gt;=/&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;mmcblk0p2&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;sdcard&lt;/span&gt; &lt;span class="n"&gt;rootfstype&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;ext4&lt;/span&gt; &lt;span class="n"&gt;elevator&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;deadline&lt;/span&gt; &lt;span class="n"&gt;rootwait&lt;/span&gt; &lt;span class="n"&gt;smsc95xx&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;turbo_mode&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;N&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now we need to tell the rest of the system on the Pi about the new partition.
+Open up the fstab file on the Pi&amp;#8217;s root partition (&lt;code&gt;/tmp/pi_root/etc/fstab&lt;/code&gt;)
+and change &lt;code&gt;/dev/mmcblk0p2&lt;/code&gt; to &lt;code&gt;/dev/mapper/sdcard&lt;/code&gt;. Now create a crypttab file
+(&lt;code&gt;/tmp/pi_root/etc/crypttab&lt;/code&gt;) and add this line at the end. Note that those are
+tab characters seprarating each word, not&amp;nbsp;spaces.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sdcard&lt;/span&gt;  &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;mmcblk0p2&lt;/span&gt;  &lt;span class="n"&gt;none&lt;/span&gt;    &lt;span class="n"&gt;luks&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now unmount everything and put the &lt;span class="caps"&gt;SD&lt;/span&gt; card back in your&amp;nbsp;Pi.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;umount&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;pi_boot&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;pi_root&lt;/span&gt;
+&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;cryptsetup&lt;/span&gt; &lt;span class="n"&gt;luksClose&lt;/span&gt; &lt;span class="n"&gt;sdcard&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;First&amp;nbsp;Boot&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;The first boot will fail.&lt;/strong&gt; Have a &lt;span class="caps"&gt;USB&lt;/span&gt; keyboard and a screen hooked up to
+your Pi so you can work with the Busybox recovery shell. All you have to do is
+mount the root partition and then exit the shell, and everything else will take
+care of itself. Run these commands when you get an &lt;code&gt;(initramfs)&lt;/code&gt; prompt.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;cryptsetup&lt;/span&gt; &lt;span class="n"&gt;luksOpen&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;mmcblk0p2&lt;/span&gt; &lt;span class="n"&gt;sdcard&lt;/span&gt;
+&lt;span class="n"&gt;exit&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Once the Pi is booted up the rest of the way, you need to re-create the
+initramfs so you get a nicer unlock prompt on future start&amp;nbsp;ups.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;mkinitramfs&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;o&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;boot&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;initramfs&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gz&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;You can now reboot. Instead of errors about not being able to find or mount the
+root partition, you should get a nice prompt asking for your unlock password.
+Enter it and press return, and the rest of the boot process should&amp;nbsp;follow.&lt;/p&gt;
+&lt;h3&gt;Time&amp;nbsp;Problem&lt;/h3&gt;
+&lt;p&gt;I found sometimes that mounting the decrypted root partition would fail because
+the last unmount time was far in the future. This is because the Pi can&amp;#8217;t save
+the time between reboots like most other computers. To work around this, you can
+use the &lt;code&gt;date&lt;/code&gt; command to set the time in the initramfs, and then mount the system.
+&lt;code&gt;date&lt;/code&gt; takes the current time in MMDDhhmmYYYY, so November 4, 2013 at 13:30
+would be 110413302013. To get to a shell to set the time, intentionally
+cause the unlock script to exit by entering an incorrect password three times.
+You&amp;#8217;ll then have to wait about 30 seconds for a timeout, and then you&amp;#8217;ll be at
+the &lt;code&gt;(initramfs)&lt;/code&gt; prompt. Set the time to something reasonably close (as long
+as it&amp;#8217;s within a day, you&amp;#8217;re good) and then restart the unlocking&amp;nbsp;script.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;date&lt;/span&gt; &lt;span class="mi"&gt;110413302013&lt;/span&gt;
+&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;scripts&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;local&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;top&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;cryptroot&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Remote&amp;nbsp;Unlocking&lt;/h2&gt;
+&lt;p&gt;Having to be physically at the Pi to unlock the disk can be a pain, but there
+is a way of unlocking it over &lt;span class="caps"&gt;SSH&lt;/span&gt;. The Dropbear &lt;span class="caps"&gt;SSH&lt;/span&gt; server is a very
+small and lightweight server that can be run from the initramfs. It will
+automatically add itself to the initramfs if it detects an encrypted partition
+on the&amp;nbsp;system.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;apt&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;dropbear&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;There&amp;#8217;s a minor bug in the initramfs scripts shipping with Dropbear in
+Raspbian. On line 296 of
+&lt;code&gt;/usr/share/initramfs-tools/scripts/local-top/cryptroot&lt;/code&gt;, add &lt;code&gt;/sbin/&lt;/code&gt;
+just before &lt;code&gt;blkid&lt;/code&gt;. It should look like this&amp;nbsp;afterwards:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;&lt;span class="caps"&gt;FSTYPE&lt;/span&gt;&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;$(/sbin/blkid -s &lt;span class="caps"&gt;TYPE&lt;/span&gt; -o value &amp;quot;&lt;/span&gt;&lt;span class="err"&gt;$&lt;/span&gt;&lt;span class="n"&gt;&lt;span class="caps"&gt;NEWROOT&lt;/span&gt;&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;)&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;You have to re-create the initramfs again to trigger Dropbear to generate &lt;span class="caps"&gt;SSH&lt;/span&gt;&amp;nbsp;keys.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;mkinitramfs&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;o&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;boot&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;initramfs&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gz&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now copy over the &lt;span class="caps"&gt;SSH&lt;/span&gt; key Dropbear generates (this is from the Pi, to another&amp;nbsp;computer).&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;scp&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;etc&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;initramfs&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;tools&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ssh&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;id_rsa&lt;/span&gt; &lt;span class="n"&gt;username&lt;/span&gt;&lt;span class="err"&gt;@&lt;/span&gt;&lt;span class="n"&gt;othercomputer&lt;/span&gt;&lt;span class="o"&gt;:~/&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ssh&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;id_rsa_rpi_dropbear&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Finally, edit initramfs&amp;#8217; authorized_keys file to have Dropbear show you the
+password prompt as soon as you&amp;nbsp;connect.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;nano&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;etc&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;initramfs&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;tools&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ssh&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;authorized_keys&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Add this chunk of text just before the &lt;code&gt;ssh-rsa&lt;/code&gt; at the beginning of the file.
+This starts the unlock script, and once it has exited it stops the other
+instance of the unlock script so boot can&amp;nbsp;continue.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;command&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;/scripts/local-top/cryptroot &amp;amp;&amp;amp; kill -9 `ps | grep -m 1 &amp;#39;cryptroot&amp;#39; | cut -d &amp;#39; &amp;#39; -f 3`&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;And finally, rebuild initramfs for the last time (until you upgrade your&amp;nbsp;kernel).&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;sudo&lt;/span&gt; &lt;span class="n"&gt;mkinitramfs&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;o&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;boot&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;initramfs&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gz&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;To test it out, restart your Pi, and then try logging in from another computer
+(this step is from another computer that has network access to the&amp;nbsp;Pi).&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="n"&gt;ssh&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;~/&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ssh&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;id_rsa_rpi_dropbear&lt;/span&gt; &lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="err"&gt;@&lt;/span&gt;&lt;span class="mf"&gt;192.168.2.143&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;You should be asked to enter a password, and once a correct one has been
+entered the Pi will boot the rest of the&amp;nbsp;way.&lt;/p&gt;
+&lt;h2&gt;Conclusions&lt;/h2&gt;
+&lt;p&gt;Write speed is greatly reduced, down to 4.2 &lt;span class="caps"&gt;MB&lt;/span&gt;/s from 12.9 &lt;span class="caps"&gt;MB&lt;/span&gt;/sec.
+Writing a continued chunk of data to the &lt;span class="caps"&gt;SD&lt;/span&gt; card also pegs the &lt;span class="caps"&gt;CPU&lt;/span&gt; at 100%.
+This results in a noticably slower startup and significant delays when
+something is being written to disk. This might improve if &lt;span class="caps"&gt;AES&lt;/span&gt;-&lt;span class="caps"&gt;XTS&lt;/span&gt; support is
+enabled in the Pi&amp;#8217;s kernel and cryptsetup is updated to use it, but I&amp;#8217;m not
+confident the improvement will be that&amp;nbsp;substantial.&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Will Ross</dc:creator><pubDate>Mon, 04 Nov 2013 00:00:00 -0500</pubDate><guid>tag:paxswill.com,2013-11-04:blog/2013/11/04/encrypted-raspberry-pi/</guid><category>raspberrypi linux</category></item><item><title>Letter Frequencies in Names of Virginia Cities</title><link>http://paxswill.com/blog/2013/02/28/virginia-cities/</link><description>
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
 &lt;p&gt;Recently I&amp;#8217;ve noticed on Facebook a couple of trivia posts asking you to try to name a city in Virgina with a certain letter in it. As background, thses posts are coming from my friends living in Virginia. You also have to be at least somewhat familiar with &lt;a href="https://en.wikipedia.org/wiki/Political_subdivisions_of_Virginia"&gt;Virginian municipal structure&lt;/a&gt;. Like other states, Virginia is divided up into counties. In most other states, the next step down is cities and/or towns. In Virginia, cities are independant and on the same level as counties. So the bar for being a city is pretty high, and many people can name a decent number of them if they put their mind to it. I wanted to find out if there were any letters not used in any cities. And because (like many programmers) I&amp;#8217;m lazy and didn&amp;#8217;t want to look through all of the cities manually I turned to Python to help&amp;nbsp;me.&lt;/p&gt;
 &lt;/div&gt;

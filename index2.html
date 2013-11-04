@@ -35,6 +35,119 @@
         <div class="col-sm-8 col-md-6">
   <article>
 <h2>
+  <a href="/blog/2011/08/14/nsstring-cons/">NSString&nbsp;Cons</a>
+<small><time datetime="2011-08-14 06:54" pubdate>
+  14 August 2011
+</time>
+</small></h2>
+
+<p>One of the fundamental operators in functional languages is &#8216;cons&#8217;. It
+concatenates lists of things together, and since strings are usually treated as
+lists of characters, cons gets a lot of use in string processing as well. One
+of the cool tricks I saw done with Objective-C a while ago was implementing
+cons on NSString, using <code>:</code> like Haskell and <span class="caps">ML</span> do. I have been unable to find
+the original site, so I decided to reimplement it myself&nbsp;recently.</p>
+<!--more-->
+
+<p>A quick caveat to the following: this uses Objective-C trickery that may not be
+very safe in a production environment. Also, the upcoming Automatic Reference
+Counting in Clang/<span class="caps">LLVM</span> 3.0 will not compile this code. With that out of the
+way, lets look at how we&#8217;re going to do this. In Objective-C, methods are
+backed by a concrete implementation in the form of a standard C function. The
+runtime uses the <a href="http://developer.apple.com/library/mac/documentation/Cocoa/Reference/ObjCRuntimeRef/Reference/reference.html#//apple_ref/doc/uid/TP40001418-CH3g-BAJFGBJF"><code>IMP</code></a> type for this, which is defined&nbsp;as</p>
+<div class="highlight"><pre><span class="kt">id</span> <span class="p">(</span><span class="o">*</span><span class="kt"><span class="caps">IMP</span></span><span class="p">)(</span><span class="kt">id</span> <span class="n">self</span><span class="p">,</span> <span class="kt"><span class="caps">SEL</span></span> <span class="n">selector</span><span class="p">,</span> <span class="p">...)</span>
+</pre></div>
+
+
+<p>The <code>...</code> in this case stands for additional arguments for the method. For
+example, <code>[@"foo" stringByAppendingString:@"bar"]</code> will eventually be executed
+by a function matching the prototype&nbsp;below.</p>
+<div class="highlight"><pre><span class="kt">id</span> <span class="n">functionName</span><span class="p">(</span><span class="kt">id</span> <span class="n">self</span><span class="p">,</span> <span class="kt"><span class="caps">SEL</span></span> <span class="n">sel</span><span class="p">,</span> <span class="n">NSString</span> <span class="o">*</span><span class="n">otherString</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Additional arguments are just tacked onto the end. This can be combined with
+standard C varargs. The only caveat is we need to signal the end of the varargs
+somehow. I used <code>nil</code>.</p>
+<div class="highlight"><pre><span class="kt">id</span> <span class="nf">stringCons</span><span class="p">(</span><span class="kt">id</span> <span class="n">self</span><span class="p">,</span> <span class="kt"><span class="caps">SEL</span></span> <span class="n">selector</span><span class="p">,</span> <span class="p">...){</span>
+    <span class="kt">va_list</span> <span class="n">strings</span><span class="p">;</span>
+    <span class="n">NSMutableString</span> <span class="o">*</span><span class="n">fullString</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSMutableString</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">initWithString</span><span class="o">:</span><span class="n">self</span><span class="p">];</span>
+    <span class="n">va_start</span><span class="p">(</span><span class="n">strings</span><span class="p">,</span> <span class="n">selector</span><span class="p">);</span>
+    <span class="kt">id</span> <span class="n">currentString</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+    <span class="c1">// End on nil</span>
+    <span class="k">while</span><span class="p">((</span><span class="n">currentString</span> <span class="o">=</span> <span class="n">va_arg</span><span class="p">(</span><span class="n">strings</span><span class="p">,</span> <span class="kt">id</span><span class="p">))){</span>
+        <span class="p">[</span><span class="n">fullString</span> <span class="n">appendString</span><span class="o">:</span><span class="n">currentString</span><span class="p">];</span>
+    <span class="p">}</span>
+    <span class="n">va_end</span><span class="p">(</span><span class="n">strings</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">fullString</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>There are two approaches to adding a method to a class at runtime in
+Objective-C. The  normal way is to use
+<a href="http://developer.apple.com/library/mac/documentation/Cocoa/Reference/ObjCRuntimeRef/Reference/reference.html#//apple_ref/c/func/class_addMethod"><code>class_addMethod</code></a>. This is enough in most cases, but because
+we have a variable length selector, we can&#8217;t use this method. Another way
+methods can be added is with the dynamic method resolution available through
+NSObject (Mike Ash touches on this method in a post on
+<a href="http://mikeash.com/pyblog/friday-qa-2009-03-27-objective-c-message-forwarding.html">message forwarding</a>).</p>
+<div class="highlight"><pre><span class="k">+</span><span class="p">(</span><span class="kt"><span class="caps">BOOL</span></span><span class="p">)</span><span class="nf">resolveInstanceMethod:</span><span class="p">(</span><span class="kt"><span class="caps">SEL</span></span><span class="p">)</span><span class="nv">sel</span><span class="p">{</span>
+    <span class="c1">// Check that the selector is just &#39;:&#39; characters</span>
+    <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">checkName</span> <span class="o">=</span> <span class="n">sel_getName</span><span class="p">(</span><span class="n">sel</span><span class="p">);</span>
+    <span class="kt"><span class="caps">BOOL</span></span> <span class="n">isCons</span> <span class="o">=</span> <span class="nb"><span class="caps">YES</span></span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="n">c</span> <span class="o">=</span> <span class="n">checkName</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+    <span class="k">while</span><span class="p">(</span><span class="n">c</span> <span class="o">!=</span> <span class="sc">&#39;\0&#39;</span><span class="p">){</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">c</span> <span class="o">!=</span> <span class="sc">&#39;:&#39;</span><span class="p">){</span>
+            <span class="n">isCons</span> <span class="o">=</span> <span class="nb"><span class="caps">NO</span></span><span class="p">;</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">checkName</span><span class="p">[</span><span class="o">++</span><span class="n">i</span><span class="p">];</span>
+    <span class="p">}</span>
+    <span class="c1">// Add the method, or pass this message up the chain</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">isCons</span><span class="p">){</span>
+        <span class="c1">// Make the type string</span>
+        <span class="kt">size_t</span> <span class="n">typesSize</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">+</span> <span class="n">i</span><span class="p">;</span>
+        <span class="kt">char</span> <span class="o">*</span><span class="n">types</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">)</span> <span class="o">*</span> <span class="n">typesSize</span><span class="p">);</span>
+        <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="sc">&#39;@&#39;</span><span class="p">;</span>
+        <span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="sc">&#39;@&#39;</span><span class="p">;</span>
+        <span class="n">types</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="sc">&#39;:&#39;</span><span class="p">;</span>
+        <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">typesSize</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span> <span class="o">++</span><span class="n">j</span><span class="p">){</span>
+            <span class="n">types</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="sc">&#39;@&#39;</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">types</span><span class="p">[</span><span class="n">typesSize</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="sc">&#39;\0&#39;</span><span class="p">;</span>
+        <span class="c1">// Add the method</span>
+        <span class="n">class_addMethod</span><span class="p">([</span><span class="n">self</span> <span class="n">class</span><span class="p">],</span> <span class="n">sel</span><span class="p">,</span> <span class="n">stringCons</span><span class="p">,</span> <span class="n">types</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nb"><span class="caps">YES</span></span><span class="p">;</span>
+    <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">super</span> <span class="n">resolveInstanceMethod</span><span class="o">:</span><span class="n">sel</span><span class="p">];</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>Here all were doing is checking to see if the selector is completely made up
+of &#8216;:&#8217; characters. If it is, we add the <code>stringCons</code> <span class="caps">IMP</span> from above for that
+selector. Note the else block at the end. The call to
+<code>[super resolveInstanceMethod:sel]</code> is very important, as other parts of a
+class may depend on this dynamic method&nbsp;resolution.</p>
+<p>The final hurdle is how to add <code>+resolveInstanceMethod:</code> to NSString. The
+safest way would be to subclass NSString, but since NSString is a class cluster
+this is not possible. I ended up using a category, but a safer choice might be
+to use method swizzling to insert our method in addition to any NSString may
+have&nbsp;defined.</p>
+<p>That&#8217;s it to adding a cons-like operator to NSString in Objective-C. To use it,
+just insert it between instances of NSString ending with <code>nil</code>, like&nbsp;below.</p>
+<div class="highlight"><pre><span class="n">NSString</span> <span class="o">*</span><span class="n">one</span> <span class="o">=</span> <span class="s">@&quot;1&quot;</span><span class="p">;</span>
+<span class="n">NSString</span> <span class="o">*</span><span class="n">two</span> <span class="o">=</span> <span class="s">@&quot;2&quot;</span><span class="p">;</span>
+<span class="n">NSString</span> <span class="o">*</span><span class="n">three</span> <span class="o">=</span> <span class="s">@&quot;3&quot;</span><span class="p">;</span>
+<span class="n">NSString</span> <span class="o">*</span><span class="n">all</span> <span class="o">=</span> <span class="p">[</span><span class="n">one</span><span class="o">:</span><span class="n">two</span><span class="o">:</span><span class="n">three</span><span class="o">:</span><span class="nb">nil</span><span class="p">];</span>
+</pre></div>
+</article>
+
+    <hr>
+  <article>
+<h2>
   <a href="/blog/2011/03/28/cwavelet-weekend/">cWavelet</a>
 <small><time datetime="2011-03-28 00:00" pubdate>
   28 March 2011
@@ -104,44 +217,6 @@ umount /dev/mmcblk*
  I sent it into Dell and got it back a week and a half&nbsp;later.</p>
 </article>
 
-    <hr>
-  <article>
-<h2>
-  <a href="/blog/2008/12/10/thoughts-on-cs-education/">Thoughts on My Education (So&nbsp;Far)</a>
-<small><time datetime="2008-12-10 00:00" pubdate>
-  10 December 2008
-</time>
-</small></h2>
-
-<p>I was reading <a href="http://itmanagement.earthweb.com/features/print.php/12297_3789981_1">this</a> article
- a bit ago. In it Bjarne Stroustrup talks about the inadequacies of American
-<span class="caps">CS</span> education. One point he brings up resonated with me. 
-<!--more-->
-I took <span class="caps">AP</span> Computer Science A and <span class="caps">AB</span> (in Java) in high school, and something we
-learned  early on was how to make our code look nice. Ideally, we didn’t put
-comments on the same line as code, and in <span class="caps">AB</span>, we had to document each method
-with preconditions, post conditions, and a general description of the method.
-While occasionally (and especially on the final project), the better practices
-fell to the wayside, we wrote nice code. Right now, I’m finishing up my first
-semester of college (intending to major in Computer Engineering), and noticed
-a jump between how I was taught <span class="caps">CS</span> in high school and how <span class="caps">CS</span> is taught in
-higher education. I took a <span class="caps">CS</span> course that was taught in C++, but we never
-talked about code style. We were referred to the textbook, which had a couple
-pages on it, but these were mostly what to comment. There was none of the
-things I was taught in Java, about you keep class data private, and segment
-everything into easily reusable parts. We were taught to just bang out code.
-One of my friends at another school was learning Java for the first time, and
-he had to write a class that held temperature data. He didn’t know what
-getters and setters were, and why you keep data private. The main class and the
-utility class were so interwoven, it would be near impossible to separate&nbsp;them.</p>
-<p>While most of us who took <span class="caps">CS</span> in my high school disliked how our teacher taught
-us, I now see why she went through all the little steps. People in my C++ class
-didn’t know why we used ints or longs, and what overflow is. All of us in <span class="caps">AP</span> <span class="caps">CS</span>
-could count in binary, and change bases at will. We didn’t learn about bitwise 
-operations in high school, but when I read about them now, I know why you can
-divide by two with a bitshift. Thanks Mrs.&nbsp;C.</p>
-</article>
-
 
 <ul class="pagination">
     <li><a href="http://paxswill.com/index.html">&laquo</a>
@@ -152,7 +227,10 @@ divide by two with a bitshift. Thanks Mrs.&nbsp;C.</p>
     <li class="active">
       <a href="http://paxswill.com/index2.html">2</a>
     </li>
-    <li class="disabled"><span>&raquo</span></li>
+    <li>
+      <a href="http://paxswill.com/index3.html">3</a>
+    </li>
+    <li><a href="http://paxswill.com/index3.html">&raquo</a></li>
 </ul>        </div>
       </div>
     </div>
