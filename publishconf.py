@@ -10,7 +10,7 @@ import sys
 sys.path.append(os.curdir)
 from pelicanconf import *
 
-SITEURL = 'http://paxswill.com'
+SITEURL = 'https://paxswill.com'
 RELATIVE_URLS = False
 
 # Atom/RSS feeds
