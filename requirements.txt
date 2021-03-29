@@ -21,7 +21,7 @@ pelican==3.6.3
 pexpect==4.0.1
 pickleshare==0.5
 ptyprocess==0.5
-Pygments==2.0.2
+Pygments==2.7.4
 -e git+https://github.com/john2x/solarized-pygment.git@2135e9376b22af9c4b1ab39ba89b6f8080641e83#egg=pygments_solarized-master
 python-dateutil==2.4.2
 pytz==2015.7
